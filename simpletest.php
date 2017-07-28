@@ -919,7 +919,7 @@ class e107WebTestCase extends e107TestCase
 	}
 
 	/**
-	 * Perform Drupal installation.
+	 * Perform e107 installation.
 	 */
 	protected function setUpInstall(array $plugins, $public_files_directory, $temp_files_directory)
 	{
