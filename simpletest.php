@@ -770,6 +770,13 @@ class e107UnitTestCase extends e107TestCase
 {
 
 	/**
+	 * The original prefix for MySQL connections.
+	 *
+	 * @var string
+	 */
+	protected $originalMySQLPrefix;
+
+	/**
 	 * Constructor for e107UnitTestCase.
 	 */
 	function __construct($test_id = null)
@@ -787,6 +794,8 @@ class e107UnitTestCase extends e107TestCase
 	 */
 	protected function setUp()
 	{
+		global $mySQLprefix;
+
 		// Store necessary current values before switching to the test environment.
 		$this->originalFileDirectory = ''; // TODO get public directory for user files.
 
@@ -797,9 +806,24 @@ class e107UnitTestCase extends e107TestCase
 		$public_files_directory = $this->originalFileDirectory . '/simpletest/' . substr($this->databasePrefix, 10);
 		simpletest_file_prepare_directory($public_files_directory, 1);
 
-		// Get a new DB instance and replace the current prefix.
-		// TODO replace prefix on each DB instance...
-		e107::getDb($this->databasePrefix)->mySQLPrefix = $this->databasePrefix;
+		// Replace MySQL prefix on DB instances.
+		$this->originalMySQLPrefix = $mySQLprefix;
+		// Change MySQL prefix on the global variable, which is set in e107_config.php file.
+		$mySQLprefix = $this->databasePrefix;
+		// Get all registered instances.
+		$instances = e107::getRegistry('_all_');
+		// Find DB instances and replace MySQL prefix on them.
+		foreach($instances as $instance_id => $instance)
+		{
+			// If the instance is a DB instance.
+			if(strpos($instance_id, 'core/e107/singleton/db') === 0)
+			{
+				// Get original instance ID.
+				$id = str_replace('core/e107/singleton/db', '', $instance_id);
+				// Change MySQL prefix.
+				e107::getDb($id)->mySQLPrefix = $mySQLprefix;
+			}
+		}
 
 		// Set user agent to be consistent with web test case.
 		$_SERVER['HTTP_USER_AGENT'] = $this->databasePrefix;
@@ -807,9 +831,25 @@ class e107UnitTestCase extends e107TestCase
 
 	protected function tearDown()
 	{
+		global $mySQLprefix;
+
 		// Get back to the original connection prefix.
-		// TODO restore prefix on each DB instance...
-		e107::getDb($this->databasePrefix)->mySQLPrefix = e107::getDb()->mySQLPrefix;
+		// Change MySQL prefix on the global variable, which is set in e107_config.php file.
+		$mySQLprefix = $this->originalMySQLPrefix;
+		// Get all registered instances.
+		$instances = e107::getRegistry('_all_');
+		// Find DB instances and replace MySQL prefix on them.
+		foreach($instances as $instance_id => $instance)
+		{
+			// If the instance is a DB instance.
+			if(strpos($instance_id, 'core/e107/singleton/db') === 0)
+			{
+				// Get original instance ID.
+				$id = str_replace('core/e107/singleton/db', '', $instance_id);
+				// Change MySQL prefix.
+				e107::getDb($id)->mySQLPrefix = $mySQLprefix;
+			}
+		}
 	}
 
 }
@@ -820,6 +860,13 @@ class e107UnitTestCase extends e107TestCase
  */
 class e107WebTestCase extends e107TestCase
 {
+
+	/**
+	 * The original prefix for MySQL connections.
+	 *
+	 * @var string
+	 */
+	protected $originalMySQLPrefix;
 
 	/**
 	 * The current user logged in using the internal browser.
@@ -856,6 +903,8 @@ class e107WebTestCase extends e107TestCase
 	 */
 	protected function setUp()
 	{
+		global $mySQLprefix;
+
 		// Generate a temporary prefixed database to ensure that tests have a clean starting point.
 		$this->databasePrefix = 'simpletest' . mt_rand(1000, 1000000);
 
@@ -868,9 +917,24 @@ class e107WebTestCase extends e107TestCase
 
 		e107::getDb()->update('simpletest_test_id', $update, false);
 
-		// Get a new DB instance and replace the current prefix.
-		// TODO replace prefix on each DB instance...
-		e107::getDb($this->databasePrefix)->mySQLPrefix = $this->databasePrefix;
+		// Replace MySQL prefix on DB instances.
+		$this->originalMySQLPrefix = $mySQLprefix;
+		// Change MySQL prefix on the global variable, which is set in e107_config.php file.
+		$mySQLprefix = $this->databasePrefix;
+		// Get all registered instances.
+		$instances = e107::getRegistry('_all_');
+		// Find DB instances and replace MySQL prefix on them.
+		foreach($instances as $instance_id => $instance)
+		{
+			// If the instance is a DB instance.
+			if(strpos($instance_id, 'core/e107/singleton/db') === 0)
+			{
+				// Get original instance ID.
+				$id = str_replace('core/e107/singleton/db', '', $instance_id);
+				// Change MySQL prefix.
+				e107::getDb($id)->mySQLPrefix = $mySQLprefix;
+			}
+		}
 
 		// Store necessary current values.
 		// TODO...
@@ -932,6 +996,8 @@ class e107WebTestCase extends e107TestCase
 	 */
 	protected function tearDown()
 	{
+		global $mySQLprefix;
+
 		// In case a fatal error occurred that was not in the test process read the log to pick up any fatal errors.
 		simpletest_log_read($this->testId, $this->databasePrefix, get_class($this), true);
 
@@ -945,12 +1011,26 @@ class e107WebTestCase extends e107TestCase
 		// Delete temporary files directory.
 		simpletest_file_delete_recursive($this->originalFileDirectory . '/simpletest/' . substr($this->databasePrefix, 10));
 
-		// Remove all prefixed tables (all the tables in the schema).
+		// Remove all prefixed tables.
 		// TODO...
 
 		// Get back to the original connection prefix.
-		// TODO restore prefix on each DB instance...
-		e107::getDb($this->databasePrefix)->mySQLPrefix = e107::getDb()->mySQLPrefix;
+		// Change MySQL prefix on the global variable, which is set in e107_config.php file.
+		$mySQLprefix = $this->originalMySQLPrefix;
+		// Get all registered instances.
+		$instances = e107::getRegistry('_all_');
+		// Find DB instances and replace MySQL prefix on them.
+		foreach($instances as $instance_id => $instance)
+		{
+			// If the instance is a DB instance.
+			if(strpos($instance_id, 'core/e107/singleton/db') === 0)
+			{
+				// Get original instance ID.
+				$id = str_replace('core/e107/singleton/db', '', $instance_id);
+				// Change MySQL prefix.
+				e107::getDb($id)->mySQLPrefix = $mySQLprefix;
+			}
+		}
 
 		// Restore original shutdown callbacks array to prevent original environment of calling handlers from test run.
 		// TODO...
