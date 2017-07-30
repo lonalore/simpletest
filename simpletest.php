@@ -40,11 +40,18 @@ abstract class e107TestCase
 	protected $databasePrefix = null;
 
 	/**
-	 * The original file directory, before it was changed for testing purposes.
+	 * The original media directory, before it was changed for testing purposes.
 	 *
 	 * @var string
 	 */
-	protected $originalFileDirectory = null;
+	protected $originalMediaDirectory = null;
+
+	/**
+	 * The original system directory, before it was changed for testing purposes.
+	 *
+	 * @var string
+	 */
+	protected $originalSystemDirectory = null;
 
 	/**
 	 * Time limit for the test.
@@ -495,7 +502,7 @@ abstract class e107TestCase
 		if($id = simpletest_verbose($message))
 		{
 			// FIXME - create a web-accessible URL...
-			$url = $this->originalFileDirectory . '/simpletest/verbose/' . get_class($this) . '-' . $id . '.html';
+			$url = $this->originalSystemDirectory . '/simpletest/verbose/' . get_class($this) . '-' . $id . '.html';
 
 			// FIXME - LANs...
 			$link = '<a href="' . $url . '" target="_blank">' . 'Verbose message' . '</a>';
@@ -797,14 +804,20 @@ class e107UnitTestCase extends e107TestCase
 		global $mySQLprefix;
 
 		// Store necessary current values before switching to the test environment.
-		$this->originalFileDirectory = ''; // TODO get public directory for user files.
+		$this->originalMediaDirectory = ''; // TODO get media directory for user files. (e107_media/[HASH])
+		$this->originalSystemDirectory = ''; // TODO get system directory for system files. (e107_system/[HASH])
 
 		// Generate temporary prefixed database to ensure that tests have a clean starting point.
 		$this->databasePrefix = 'simpletest' . mt_rand(1000, 1000000);
 
-		// Create test directory.
-		$public_files_directory = $this->originalFileDirectory . '/simpletest/' . substr($this->databasePrefix, 10);
-		simpletest_file_prepare_directory($public_files_directory, 1);
+		// Create test (media) directory.
+		$media_files_directory = $this->originalMediaDirectory . '/simpletest/' . substr($this->databasePrefix, 10);
+		// Create test (system) directory.
+		$system_files_directory = $this->originalSystemDirectory . '/simpletest/' . substr($this->databasePrefix, 10);
+		// Prepare directories.
+		simpletest_file_prepare_directory($media_files_directory, 1);
+		simpletest_file_prepare_directory($system_files_directory, 1);
+		// TODO... force e107 to use the test (media, system) directories created above...
 
 		// Replace MySQL prefix on DB instances.
 		$this->originalMySQLPrefix = $mySQLprefix;
@@ -846,6 +859,11 @@ class e107UnitTestCase extends e107TestCase
 				$instance->mySQLPrefix = $mySQLprefix;
 			}
 		}
+
+		// TODO... force e107 to use original (media, system) directories...
+		// Delete test files directories.
+		simpletest_file_delete_recursive($this->originalMediaDirectory . '/simpletest/' . substr($this->databasePrefix, 10));
+		simpletest_file_delete_recursive($this->originalSystemDirectory . '/simpletest/' . substr($this->databasePrefix, 10));
 	}
 
 }
@@ -931,7 +949,8 @@ class e107WebTestCase extends e107TestCase
 		}
 
 		// Store necessary current values.
-		// TODO...
+		$this->originalMediaDirectory = ''; // TODO get media directory for user files. (e107_media/[HASH])
+		$this->originalSystemDirectory = ''; // TODO get system directory for system files. (e107_system/[HASH])
 
 		// Save and clean shutdown callbacks array because it static cached and will be changed by the test run.
 		// If we don't, then it will contain callbacks from both environments.
@@ -940,23 +959,28 @@ class e107WebTestCase extends e107TestCase
 
 		// Create test directory ahead of installation so fatal errors and debug information can be logged during
 		// installation process. Use temporary files directory with the same prefix as the database.
-		$public_files_directory = $this->originalFileDirectory . '/simpletest/' . substr($this->databasePrefix, 10);
-		$temp_files_directory = $public_files_directory . '/temp';
-
-		// Create the directories.
-		simpletest_file_prepare_directory($public_files_directory, 1);
+		// Create test (media) directory.
+		$media_files_directory = $this->originalMediaDirectory . '/simpletest/' . substr($this->databasePrefix, 10);
+		// Create test (system) directory.
+		$system_files_directory = $this->originalSystemDirectory . '/simpletest/' . substr($this->databasePrefix, 10);
+		// Create test (system) directory.
+		$temp_files_directory = $system_files_directory . '/temp';
+		// Prepare directories.
+		simpletest_file_prepare_directory($media_files_directory, 1);
+		simpletest_file_prepare_directory($system_files_directory, 1);
 		simpletest_file_prepare_directory($temp_files_directory, 1);
+		// TODO... force e107 to use the test (media, system) directories created above...
 
 		// Log fatal errors.
 		ini_set('log_errors', 1);
-		ini_set('error_log', $public_files_directory . '/error.log');
+		ini_set('error_log', $system_files_directory . '/error.log');
 
 		// Set the test information for use in other parts of e107.
 		$test_info = &$GLOBALS['e107_test_info'];
 		$test_info['test_run_id'] = $this->databasePrefix;
 		$test_info['in_child_site'] = false;
 
-		$this->setUpInstall(func_get_args(), $public_files_directory, $temp_files_directory);
+		$this->setUpInstall(func_get_args(), $media_files_directory, $system_files_directory, $temp_files_directory);
 
 		// Rebuild caches.
 		// TODO...
@@ -965,9 +989,6 @@ class e107WebTestCase extends e107TestCase
 		// TODO...
 
 		// Log in with a clean $user.
-		// TODO...
-
-		// Set up languages.
 		// TODO...
 
 		// Use a test mail class instead of the default mail handler class.
@@ -979,9 +1000,12 @@ class e107WebTestCase extends e107TestCase
 	/**
 	 * Perform e107 installation.
 	 */
-	protected function setUpInstall(array $plugins, $public_files_directory, $temp_files_directory)
+	protected function setUpInstall(array $plugins, $media_files_directory, $system_files_directory, $temp_files_directory)
 	{
-		// TODO...
+		// TODO... install e107 using the following variables:
+		// - $this->databasePrefix
+		// - $media_files_directory
+		// - $temp_files_directory
 	}
 
 	/**
@@ -1002,8 +1026,10 @@ class e107WebTestCase extends e107TestCase
 			$this->pass($message, 'E-mail');
 		}
 
-		// Delete temporary files directory.
-		simpletest_file_delete_recursive($this->originalFileDirectory . '/simpletest/' . substr($this->databasePrefix, 10));
+		// TODO... force e107 to use original (media, system) directories...
+		// Delete test files directories.
+		simpletest_file_delete_recursive($this->originalMediaDirectory . '/simpletest/' . substr($this->databasePrefix, 10));
+		simpletest_file_delete_recursive($this->originalSystemDirectory . '/simpletest/' . substr($this->databasePrefix, 10));
 
 		// Remove all prefixed tables.
 		// TODO...
@@ -1035,9 +1061,6 @@ class e107WebTestCase extends e107TestCase
 		$this->additionalCurlOptions = array();
 
 		// Rebuild caches.
-		// TODO...
-
-		// Reset language.
 		// TODO...
 
 		// Close the CURL handler.
