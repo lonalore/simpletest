@@ -818,10 +818,8 @@ class e107UnitTestCase extends e107TestCase
 			// If the instance is a DB instance.
 			if(strpos($instance_id, 'core/e107/singleton/db') === 0)
 			{
-				// Get original instance ID.
-				$id = str_replace('core/e107/singleton/db', '', $instance_id);
 				// Change MySQL prefix.
-				e107::getDb($id)->mySQLPrefix = $mySQLprefix;
+				$instance->mySQLPrefix = $mySQLprefix;
 			}
 		}
 
@@ -844,10 +842,8 @@ class e107UnitTestCase extends e107TestCase
 			// If the instance is a DB instance.
 			if(strpos($instance_id, 'core/e107/singleton/db') === 0)
 			{
-				// Get original instance ID.
-				$id = str_replace('core/e107/singleton/db', '', $instance_id);
 				// Change MySQL prefix.
-				e107::getDb($id)->mySQLPrefix = $mySQLprefix;
+				$instance->mySQLPrefix = $mySQLprefix;
 			}
 		}
 	}
@@ -929,10 +925,8 @@ class e107WebTestCase extends e107TestCase
 			// If the instance is a DB instance.
 			if(strpos($instance_id, 'core/e107/singleton/db') === 0)
 			{
-				// Get original instance ID.
-				$id = str_replace('core/e107/singleton/db', '', $instance_id);
 				// Change MySQL prefix.
-				e107::getDb($id)->mySQLPrefix = $mySQLprefix;
+				$instance->mySQLPrefix = $mySQLprefix;
 			}
 		}
 
@@ -1025,10 +1019,8 @@ class e107WebTestCase extends e107TestCase
 			// If the instance is a DB instance.
 			if(strpos($instance_id, 'core/e107/singleton/db') === 0)
 			{
-				// Get original instance ID.
-				$id = str_replace('core/e107/singleton/db', '', $instance_id);
 				// Change MySQL prefix.
-				e107::getDb($id)->mySQLPrefix = $mySQLprefix;
+				$instance->mySQLPrefix = $mySQLprefix;
 			}
 		}
 
