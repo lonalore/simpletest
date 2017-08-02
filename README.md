@@ -7,7 +7,9 @@ e107 (v2) plugin - Provides a framework for unit and functional testing.
 
 ### Requirements
 
-- The **php-curl** library is required for SimpleTest to function.
+- SimpleTest requires the PHP **cURL** library to be available.
+- SimpleTest requires the **DOMDocument** class to be available.
+- SimpleTest requires the PHP **open_basedir** restriction to be disabled. Check your webserver configuration or contact your web host.
 
 ### How e107's SimpleTest works
 
