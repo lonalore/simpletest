@@ -808,7 +808,7 @@ class e107UnitTestCase extends e107TestCase
 		$this->originalSystemDirectory = ''; // TODO get system directory for system files. (e107_system/[HASH])
 
 		// Generate temporary prefixed database to ensure that tests have a clean starting point.
-		$this->databasePrefix = 'simpletest' . mt_rand(1000, 1000000);
+		$this->databasePrefix = 'simpletest__' . mt_rand(1000, 1000000);
 
 		// Create test (media) directory.
 		$media_files_directory = $this->originalMediaDirectory . '/simpletest/' . substr($this->databasePrefix, 10);
@@ -920,7 +920,7 @@ class e107WebTestCase extends e107TestCase
 		global $mySQLprefix;
 
 		// Generate a temporary prefixed database to ensure that tests have a clean starting point.
-		$this->databasePrefix = 'simpletest' . mt_rand(1000, 1000000);
+		$this->databasePrefix = 'simpletest__' . mt_rand(1000, 1000000);
 
 		$update = array(
 			'data'  => array(
@@ -1198,7 +1198,6 @@ function simpletest_verbose($message, $original_file_directory = null, $test_cla
 function simpletest_file_prepare_directory(&$directory, $options = 2)
 {
 	$directory = e107::getParser()->replaceConstants($directory);
-
 	$directory = rtrim($directory, '/\\');
 
 	// Check if directory exists.
@@ -1541,4 +1540,286 @@ function simpletest_log_read($test_id, $prefix, $test_class, $during_test = fals
 	}
 
 	return $found;
+}
+
+/**
+ * Get a list of all of the tests provided by the system.
+ *
+ * The list of test classes is loaded from the registry where it looks for files ending in ".test".
+ * Once loaded the test list is cached and stored in a static variable.
+ *
+ * @return array
+ *   An array of tests keyed with the groups specified in each of the tests getInfo() method and then keyed by the
+ *   test class. An example of the array structure is provided below.
+ *
+ * @code
+ *   $groups['Comment'] => array(
+ *    'CommentTestCase' => array(
+ *        'name' => 'Comment functionality',
+ *        'description' => 'Create, view, edit, delete, ...',
+ *        'group' => 'Comment',
+ *    ),
+ *   );
+ * @endcode
+ */
+function simpletest_test_get_all()
+{
+	static $groups;
+
+	if(empty($groups))
+	{
+		$cache = e107::getCache();
+
+		// Load test information from cache if available, otherwise retrieve the information from each tests getInfo()
+		// method.
+		if($cached = $cache->retrieve('simpletest_tests', false, true, true))
+		{
+			$groups = unserialize(base64_decode($cached));
+		}
+		else
+		{
+			// Select all classes in files ending with .test.
+			$classes = array(); // TODO...
+
+			// Check that each class has a getInfo() method and store the information in an array keyed with the group
+			// specified in the test information.
+			$groups = array();
+
+			foreach($classes as $class)
+			{
+				// Test classes need to implement getInfo() to be valid.
+				if(class_exists($class) && method_exists($class, 'getInfo'))
+				{
+					$info = call_user_func(array($class, 'getInfo'));
+
+					// If this test class requires a non-existing plugin, skip it.
+					if(!empty($info['dependencies']))
+					{
+						foreach($info['dependencies'] as $plugin)
+						{
+							if(!e107::isInstalled($plugin))
+							{
+								continue 2;
+							}
+						}
+					}
+
+					$groups[$info['group']][$class] = $info;
+				}
+			}
+
+			// Sort the groups and tests within the groups by name.
+			uksort($groups, 'strnatcasecmp');
+			foreach($groups as $group => &$tests)
+			{
+				uksort($tests, 'strnatcasecmp');
+			}
+
+			// Allow plugins to alter $groups.
+			// TODO...
+
+			$cacheData = base64_encode(serialize($groups));
+			$cache->set('simpletest_tests', $cacheData, true, false, true);
+		}
+	}
+
+	return $groups;
+}
+
+/**
+ * Generate test file.
+ */
+function simpletest_generate_file($filename, $width, $lines, $type = 'binary-text')
+{
+	$size = $width * $lines - $lines;
+
+	// Generate random text.
+	$text = '';
+
+	for($i = 0; $i < $size; $i++)
+	{
+		switch($type)
+		{
+			case 'text':
+				$text .= chr(rand(32, 126));
+				break;
+			case 'binary':
+				$text .= chr(rand(0, 31));
+				break;
+			case 'binary-text':
+			default:
+				$text .= rand(0, 1);
+				break;
+		}
+	}
+	$text = wordwrap($text, $width - 1, "\n", true) . "\n"; // Add \n for symetrical file.
+
+	// Create filename.
+	file_put_contents('........./' . $filename . '.txt', $text); // FIXME - directory path?!
+
+	return $filename;
+}
+
+/**
+ * Remove all temporary database tables and directories.
+ */
+function simpletest_clean_environment()
+{
+	simpletest_clean_database();
+	simpletest_clean_temporary_directories();
+
+	$prefs = e107::getPlugConfig('simpletest')->getPref();
+
+	if(!empty($prefs['clear_results']))
+	{
+		$count = simpletest_clean_results_table();
+
+		if($count > 1)
+		{
+			$message = e107::getParser()->lanVars('Removed [x] test results.', array(
+				'x' => $count,
+			));
+		}
+		else
+		{
+			$message = 'Removed 1 test result.';
+		}
+	}
+	else
+	{
+		$message = 'Clear results is disabled and the test results table will not be cleared.';
+	}
+
+	e107::getMessage()->add($message, eMessage::E_WARNING);
+	e107::getCache()->clear('simpletest_test');
+}
+
+/**
+ * Removed prefixed tables from the database that are left over from crashed tests.
+ */
+function simpletest_clean_database()
+{
+	$tables = array(); // TODO - get tables with 'simpletest__%' prefix...
+
+	$count = 0;
+
+	foreach($tables as $table)
+	{
+		// Strip the prefix and skip tables without digits following "simpletest", e.g. {simpletest_test_id}.
+		if(preg_match('/simpletest\d+.*/', $table, $matches))
+		{
+			// TODO - drop $matches[0] table...
+			$count++;
+		}
+	}
+
+	if($count > 0)
+	{
+		if($count > 1)
+		{
+			// FIXME - LANs...
+			$message = e107::getParser()->lanVars('Removed [x] leftover tables.', array(
+				'x' => $count,
+			));
+		}
+		else
+		{
+			// FIXME - LANs...
+			$message = e107::getParser()->lanVars('Removed [x] leftover table.', array(
+				'x' => $count,
+			));
+		}
+	}
+	else
+	{
+		// FIXME - LANs...
+		$message = 'No leftover tables to remove.';
+	}
+
+	e107::getMessage()->add($message);
+}
+
+/**
+ * Find all leftover temporary directories and remove them.
+ */
+function simpletest_clean_temporary_directories()
+{
+	$files = scandir('....../simpletest'); // FIXME - directory path?!
+
+	$count = 0;
+
+	foreach($files as $file)
+	{
+		$path = '....../simpletest/' . $file; // FIXME - directory path?!
+
+		if(is_dir($path) && is_numeric($file))
+		{
+			simpletest_file_delete_recursive($path);
+			$count++;
+		}
+	}
+
+	if($count > 0)
+	{
+		if($count > 1)
+		{
+			// FIXME - LANs...
+			$message = e107::getParser()->lanVars('Removed [x] temporary directories.', array(
+				'x' => $count,
+			));
+		}
+		else
+		{
+			// FIXME - LANs...
+			$message = e107::getParser()->lanVars('Removed [x] temporary directory.', array(
+				'x' => $count,
+			));
+		}
+	}
+	else
+	{
+		// FIXME - LANs...
+		$message = 'No temporary directories to remove.';
+	}
+
+	e107::getMessage()->add($message);
+}
+
+/**
+ * Clear the test result tables.
+ *
+ * @param $test_id
+ *   Test ID to remove results for, or NULL to remove all results.
+ *
+ * @return int
+ *   The number of results removed.
+ */
+function simpletest_clean_results_table($test_id = null)
+{
+	$prefs = e107::getPlugConfig('simpletest')->getPref();
+
+	if(!empty($prefs['clear_results']))
+	{
+		if($test_id)
+		{
+			// 'SELECT COUNT(test_id) FROM {simpletest_test_id} WHERE test_id = :test_id'
+			$count = e107::getDb()->count('simpletest_test_id', 'test_id', 'test_id=' . $test_id);
+
+			e107::getDb()->delete('simpletest', 'test_id=' . $test_id);
+			e107::getDb()->delete('simpletest_test_id', 'test_id=' . $test_id);
+		}
+		else
+		{
+			// 'SELECT COUNT(test_id) FROM {simpletest_test_id}'
+			$count = e107::getDb()->count('simpletest_test_id', 'test_id');
+
+			// Clear test results.
+			e107::getDb()->delete('simpletest');
+			e107::getDb()->delete('simpletest_test_id');
+		}
+
+		return $count;
+	}
+
+	return 0;
 }
