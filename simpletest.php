@@ -808,7 +808,7 @@ class e107UnitTestCase extends e107TestCase
 		$this->originalSystemDirectory = ''; // TODO get system directory for system files. (e107_system/[HASH])
 
 		// Generate temporary prefixed database to ensure that tests have a clean starting point.
-		$this->databasePrefix = 'simpletest__' . mt_rand(1000, 1000000);
+		$this->databasePrefix = 'simpletest' . mt_rand(1000, 1000000);
 
 		// Create test (media) directory.
 		$media_files_directory = $this->originalMediaDirectory . '/simpletest/' . substr($this->databasePrefix, 10);
@@ -920,7 +920,7 @@ class e107WebTestCase extends e107TestCase
 		global $mySQLprefix;
 
 		// Generate a temporary prefixed database to ensure that tests have a clean starting point.
-		$this->databasePrefix = 'simpletest__' . mt_rand(1000, 1000000);
+		$this->databasePrefix = 'simpletest' . mt_rand(1000, 1000000);
 
 		$update = array(
 			'data'  => array(
@@ -1699,7 +1699,7 @@ function simpletest_clean_environment()
  */
 function simpletest_clean_database()
 {
-	$tables = array(); // TODO - get tables with 'simpletest__%' prefix...
+	$tables = array(); // TODO - get tables with 'simpletest%' prefix...
 
 	$count = 0;
 
