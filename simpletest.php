@@ -40,20 +40,6 @@ abstract class e107TestCase
 	protected $databasePrefix = null;
 
 	/**
-	 * The original media directory, before it was changed for testing purposes.
-	 *
-	 * @var string
-	 */
-	protected $originalMediaDirectory = null;
-
-	/**
-	 * The original system directory, before it was changed for testing purposes.
-	 *
-	 * @var string
-	 */
-	protected $originalSystemDirectory = null;
-
-	/**
 	 * Time limit for the test.
 	 */
 	protected $timeLimit = 500;
@@ -801,28 +787,22 @@ class e107UnitTestCase extends e107TestCase
 	 */
 	protected function setUp()
 	{
-		global $mySQLprefix;
-
-		// Store necessary current values before switching to the test environment.
-		$this->originalMediaDirectory = ''; // TODO get media directory for user files. (e107_media/[HASH])
-		$this->originalSystemDirectory = ''; // TODO get system directory for system files. (e107_system/[HASH])
+		global $mySQLprefix, $MEDIA_DIRECTORY, $SYSTEM_DIRECTORY;
 
 		// Generate temporary prefixed database to ensure that tests have a clean starting point.
 		$this->databasePrefix = 'simpletest' . mt_rand(1000, 1000000);
 
 		// Create test (media) directory.
-		$media_files_directory = $this->originalMediaDirectory . '/simpletest/' . substr($this->databasePrefix, 10);
+		$media_files_directory = rtrim($MEDIA_DIRECTORY, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
 		// Create test (system) directory.
-		$system_files_directory = $this->originalSystemDirectory . '/simpletest/' . substr($this->databasePrefix, 10);
+		$system_files_directory = rtrim($SYSTEM_DIRECTORY, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
+
 		// Prepare directories.
 		simpletest_file_prepare_directory($media_files_directory, 1);
 		simpletest_file_prepare_directory($system_files_directory, 1);
-		// TODO... force e107 to use the test (media, system) directories created above...
 
 		// Replace MySQL prefix on DB instances.
 		$this->originalMySQLPrefix = $mySQLprefix;
-		// Change MySQL prefix on the global variable, which is set in e107_config.php file.
-		$mySQLprefix = $this->databasePrefix;
 		// Get all registered instances.
 		$instances = e107::getRegistry('_all_');
 		// Find DB instances and replace MySQL prefix on them.
@@ -832,7 +812,7 @@ class e107UnitTestCase extends e107TestCase
 			if(strpos($instance_id, 'core/e107/singleton/db') === 0)
 			{
 				// Change MySQL prefix.
-				$instance->mySQLPrefix = $mySQLprefix;
+				$instance->mySQLPrefix = $this->databasePrefix;
 			}
 		}
 
@@ -842,11 +822,9 @@ class e107UnitTestCase extends e107TestCase
 
 	protected function tearDown()
 	{
-		global $mySQLprefix;
+		global $MEDIA_DIRECTORY, $SYSTEM_DIRECTORY;
 
 		// Get back to the original connection prefix.
-		// Change MySQL prefix on the global variable, which is set in e107_config.php file.
-		$mySQLprefix = $this->originalMySQLPrefix;
 		// Get all registered instances.
 		$instances = e107::getRegistry('_all_');
 		// Find DB instances and replace MySQL prefix on them.
@@ -856,14 +834,18 @@ class e107UnitTestCase extends e107TestCase
 			if(strpos($instance_id, 'core/e107/singleton/db') === 0)
 			{
 				// Change MySQL prefix.
-				$instance->mySQLPrefix = $mySQLprefix;
+				$instance->mySQLPrefix = $this->originalMySQLPrefix;
 			}
 		}
 
-		// TODO... force e107 to use original (media, system) directories...
+		// Create test (media) directory.
+		$media_files_directory = rtrim($MEDIA_DIRECTORY, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
+		// Create test (system) directory.
+		$system_files_directory = rtrim($SYSTEM_DIRECTORY, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
+
 		// Delete test files directories.
-		simpletest_file_delete_recursive($this->originalMediaDirectory . '/simpletest/' . substr($this->databasePrefix, 10));
-		simpletest_file_delete_recursive($this->originalSystemDirectory . '/simpletest/' . substr($this->databasePrefix, 10));
+		simpletest_file_delete_recursive($media_files_directory);
+		simpletest_file_delete_recursive($system_files_directory);
 	}
 
 }
@@ -917,7 +899,7 @@ class e107WebTestCase extends e107TestCase
 	 */
 	protected function setUp()
 	{
-		global $mySQLprefix;
+		global $mySQLprefix, $MEDIA_DIRECTORY, $SYSTEM_DIRECTORY;
 
 		// Generate a temporary prefixed database to ensure that tests have a clean starting point.
 		$this->databasePrefix = 'simpletest' . mt_rand(1000, 1000000);
@@ -928,13 +910,10 @@ class e107WebTestCase extends e107TestCase
 			),
 			'WHERE' => 'test_id = ' . $this->testId,
 		);
-
 		e107::getDb()->update('simpletest_test_id', $update, false);
 
 		// Replace MySQL prefix on DB instances.
 		$this->originalMySQLPrefix = $mySQLprefix;
-		// Change MySQL prefix on the global variable, which is set in e107_config.php file.
-		$mySQLprefix = $this->databasePrefix;
 		// Get all registered instances.
 		$instances = e107::getRegistry('_all_');
 		// Find DB instances and replace MySQL prefix on them.
@@ -944,55 +923,29 @@ class e107WebTestCase extends e107TestCase
 			if(strpos($instance_id, 'core/e107/singleton/db') === 0)
 			{
 				// Change MySQL prefix.
-				$instance->mySQLPrefix = $mySQLprefix;
+				$instance->mySQLPrefix = $this->databasePrefix;
 			}
 		}
 
-		// Store necessary current values.
-		$this->originalMediaDirectory = ''; // TODO get media directory for user files. (e107_media/[HASH])
-		$this->originalSystemDirectory = ''; // TODO get system directory for system files. (e107_system/[HASH])
-
-		// Save and clean shutdown callbacks array because it static cached and will be changed by the test run.
-		// If we don't, then it will contain callbacks from both environments.
-		// So testing environment will try to call handlers from original environment.
-		// TODO...
-
-		// Create test directory ahead of installation so fatal errors and debug information can be logged during
-		// installation process. Use temporary files directory with the same prefix as the database.
 		// Create test (media) directory.
-		$media_files_directory = $this->originalMediaDirectory . '/simpletest/' . substr($this->databasePrefix, 10);
+		$media_files_directory = rtrim($MEDIA_DIRECTORY, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
 		// Create test (system) directory.
-		$system_files_directory = $this->originalSystemDirectory . '/simpletest/' . substr($this->databasePrefix, 10);
-		// Create test (system) directory.
-		$temp_files_directory = $system_files_directory . '/temp';
+		$system_files_directory = rtrim($SYSTEM_DIRECTORY, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
+
 		// Prepare directories.
 		simpletest_file_prepare_directory($media_files_directory, 1);
 		simpletest_file_prepare_directory($system_files_directory, 1);
-		simpletest_file_prepare_directory($temp_files_directory, 1);
-		// TODO... force e107 to use the test (media, system) directories created above...
 
 		// Log fatal errors.
-		ini_set('log_errors', 1);
-		ini_set('error_log', $system_files_directory . '/error.log');
+		// ini_set('log_errors', 1);
+		// ini_set('error_log', $system_files_directory . '/error.log');
 
 		// Set the test information for use in other parts of e107.
 		$test_info = &$GLOBALS['e107_test_info'];
 		$test_info['test_run_id'] = $this->databasePrefix;
 		$test_info['in_child_site'] = false;
 
-		$this->setUpInstall(func_get_args(), $media_files_directory, $system_files_directory, $temp_files_directory);
-
-		// Rebuild caches.
-		// TODO...
-
-		// Run cron once in that environment.
-		// TODO...
-
-		// Log in with a clean $user.
-		// TODO...
-
-		// Use a test mail class instead of the default mail handler class.
-		// TODO...
+		$this->setUpInstall(func_get_args(), $media_files_directory, $system_files_directory);
 
 		set_time_limit($this->timeLimit);
 	}
@@ -1000,12 +953,9 @@ class e107WebTestCase extends e107TestCase
 	/**
 	 * Perform e107 installation.
 	 */
-	protected function setUpInstall(array $plugins, $media_files_directory, $system_files_directory, $temp_files_directory)
+	protected function setUpInstall(array $plugins, $media_files_directory, $system_files_directory)
 	{
-		// TODO... install e107 using the following variables:
-		// - $this->databasePrefix
-		// - $media_files_directory
-		// - $temp_files_directory
+		// TODO... install e107 using the new MySQLL prefix
 	}
 
 	/**
@@ -1014,7 +964,7 @@ class e107WebTestCase extends e107TestCase
 	 */
 	protected function tearDown()
 	{
-		global $mySQLprefix;
+		global $MEDIA_DIRECTORY, $SYSTEM_DIRECTORY;
 
 		// In case a fatal error occurred that was not in the test process read the log to pick up any fatal errors.
 		simpletest_log_read($this->testId, $this->databasePrefix, get_class($this), true);
@@ -1026,17 +976,19 @@ class e107WebTestCase extends e107TestCase
 			$this->pass($message, 'E-mail');
 		}
 
-		// TODO... force e107 to use original (media, system) directories...
+		// Create test (media) directory.
+		$media_files_directory = rtrim($MEDIA_DIRECTORY, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
+		// Create test (system) directory.
+		$system_files_directory = rtrim($SYSTEM_DIRECTORY, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
+
 		// Delete test files directories.
-		simpletest_file_delete_recursive($this->originalMediaDirectory . '/simpletest/' . substr($this->databasePrefix, 10));
-		simpletest_file_delete_recursive($this->originalSystemDirectory . '/simpletest/' . substr($this->databasePrefix, 10));
+		simpletest_file_delete_recursive($media_files_directory);
+		simpletest_file_delete_recursive($system_files_directory);
 
 		// Remove all prefixed tables.
 		// TODO...
 
 		// Get back to the original connection prefix.
-		// Change MySQL prefix on the global variable, which is set in e107_config.php file.
-		$mySQLprefix = $this->originalMySQLPrefix;
 		// Get all registered instances.
 		$instances = e107::getRegistry('_all_');
 		// Find DB instances and replace MySQL prefix on them.
@@ -1046,22 +998,13 @@ class e107WebTestCase extends e107TestCase
 			if(strpos($instance_id, 'core/e107/singleton/db') === 0)
 			{
 				// Change MySQL prefix.
-				$instance->mySQLPrefix = $mySQLprefix;
+				$instance->mySQLPrefix = $this->originalMySQLPrefix;
 			}
 		}
-
-		// Restore original shutdown callbacks array to prevent original environment of calling handlers from test run.
-		// TODO...
-
-		// Return the user to the original one.
-		// TODO...
 
 		// Ensure that internal logged in variable and cURL options are reset.
 		$this->loggedInUser = false;
 		$this->additionalCurlOptions = array();
-
-		// Rebuild caches.
-		// TODO...
 
 		// Close the CURL handler.
 		// TODO...
