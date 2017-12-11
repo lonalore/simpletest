@@ -7,9 +7,10 @@ e107 (v2) plugin - Provides a framework for unit and functional testing.
 
 ### Requirements
 
-- SimpleTest requires the PHP **cURL** library to be available.
-- SimpleTest requires the **DOMDocument** class to be available.
-- SimpleTest requires the PHP **open_basedir** restriction to be disabled. Check your webserver configuration or contact your web host.
+- [Batch API](https://github.com/lonalore/batch) plugin
+- PHP **cURL** extension
+- PHP **DOMDocument** class
+- PHP **open_basedir** restriction need to be disabled. Check your webserver configuration or contact your web host.
 
 ### How e107's SimpleTest works
 
