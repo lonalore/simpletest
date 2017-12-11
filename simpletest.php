@@ -858,6 +858,13 @@ class e107WebTestCase extends e107TestCase
 {
 
 	/**
+	 * The new prefix for MySQL connections.
+	 *
+	 * @var string
+	 */
+	protected $databasePrefix;
+
+	/**
 	 * The original prefix for MySQL connections.
 	 *
 	 * @var string
@@ -955,7 +962,38 @@ class e107WebTestCase extends e107TestCase
 	 */
 	protected function setUpInstall(array $plugins, $media_files_directory, $system_files_directory)
 	{
-		// TODO... install e107 using the new MySQLL prefix
+		global $e107, $mySQLserver, $mySQLuser, $mySQLpassword, $mySQLdefaultdb;
+
+		$einstall = new e_install();
+
+		$einstall->e107 = $e107;
+		$einstall->e107->e107_dirs['MEDIA_DIRECTORY'] = $media_files_directory;
+		$einstall->e107->e107_dirs['SYSTEM_DIRECTORY'] = $system_files_directory;
+
+		$einstall->previous_steps['mysql']['server'] 	= $mySQLserver;
+		$einstall->previous_steps['mysql']['user']		= $mySQLuser;
+		$einstall->previous_steps['mysql']['password'] 	= $mySQLpassword;
+		$einstall->previous_steps['mysql']['db'] 		= $mySQLdefaultdb;
+		$einstall->previous_steps['mysql']['prefix'] 	= $this->databasePrefix;
+
+		$einstall->previous_steps['language'] 			= 'English';
+		$einstall->previous_steps['admin']['display']  	= 'admin';
+		$einstall->previous_steps['admin']['user']  	= 'admin';
+		$einstall->previous_steps['admin']['password']  = 'admin';
+		$einstall->previous_steps['admin']['email']  	= 'admin@example.com';
+
+		$einstall->previous_steps['generate_content'] 	= 1;
+		$einstall->previous_steps['install_plugins'] 	= 1;
+		$einstall->previous_steps['prefs']['sitename'] 	= 'SimpleTest';
+		$einstall->previous_steps['prefs']['sitetheme'] = 'bootstrap3';
+
+		$einstall->create_tables();
+		$einstall->import_configuration();
+
+		foreach($plugins as $plugin)
+		{
+			$einstall->install_plugin($plugin);
+		}
 	}
 
 	/**
