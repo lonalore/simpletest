@@ -886,6 +886,90 @@ class e107WebTestCase extends e107TestCase
 	protected $additionalCurlOptions = array();
 
 	/**
+	 * The current cookie file used by cURL.
+	 *
+	 * We do not reuse the cookies in further runs, so we do not need a file
+	 * but we still need cookie handling, so we set the jar to NULL.
+	 */
+	protected $cookieFile = null;
+
+	/**
+	 * HTTP authentication method
+	 */
+	protected $httpauth_method = CURLAUTH_BASIC;
+
+	/**
+	 * HTTP authentication credentials (<username>:<password>).
+	 */
+	protected $httpauth_credentials = null;
+
+	/**
+	 * The handle of the current cURL connection.
+	 *
+	 * @var resource
+	 */
+	protected $curlHandle;
+
+	/**
+	 * The current session name, if available.
+	 */
+	protected $session_name = null;
+
+	/**
+	 * The current session ID, if available.
+	 */
+	protected $session_id = null;
+
+	/**
+	 * The headers of the page currently loaded in the internal browser.
+	 *
+	 * @var array
+	 */
+	protected $headers;
+
+	protected $cookies;
+
+	/**
+	 * The number of redirects followed during the handling of a request.
+	 */
+	protected $redirect_count;
+
+	/**
+	 * The URL currently loaded in the internal browser.
+	 *
+	 * @var string
+	 */
+	protected $url;
+
+	/**
+	 * The content of the page currently loaded in the internal browser.
+	 *
+	 * @var string
+	 */
+	protected $content;
+
+	/**
+	 * The content of the page currently loaded in the internal browser (plain text version).
+	 *
+	 * @var string
+	 */
+	protected $plainTextContent;
+
+	/**
+	 * The value of the e107.settings JavaScript variable for the page currently loaded in the internal browser.
+	 *
+	 * @var array
+	 */
+	protected $e107Settings;
+
+	/**
+	 * The parsed version of the page.
+	 *
+	 * @var SimpleXMLElement
+	 */
+	protected $elements = NULL;
+
+	/**
 	 * Constructor for e107WebTestCase.
 	 */
 	function __construct($test_id = null)
@@ -934,9 +1018,9 @@ class e107WebTestCase extends e107TestCase
 			}
 		}
 
-		// Create test (media) directory.
+		// Get path for test (media) directory.
 		$media_files_directory = rtrim($MEDIA_DIRECTORY, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
-		// Create test (system) directory.
+		// Get path for test (system) directory.
 		$system_files_directory = rtrim($SYSTEM_DIRECTORY, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
 
 		// Prepare directories.
@@ -1002,7 +1086,7 @@ class e107WebTestCase extends e107TestCase
 	 */
 	protected function tearDown()
 	{
-		global $MEDIA_DIRECTORY, $SYSTEM_DIRECTORY;
+		global $MEDIA_DIRECTORY, $SYSTEM_DIRECTORY, $mySQLdefaultdb;
 
 		// In case a fatal error occurred that was not in the test process read the log to pick up any fatal errors.
 		simpletest_log_read($this->testId, $this->databasePrefix, get_class($this), true);
@@ -1014,9 +1098,9 @@ class e107WebTestCase extends e107TestCase
 			$this->pass($message, 'E-mail');
 		}
 
-		// Create test (media) directory.
+		// Get path for test (media) directory.
 		$media_files_directory = rtrim($MEDIA_DIRECTORY, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
-		// Create test (system) directory.
+		// Get path for test (system) directory.
 		$system_files_directory = rtrim($SYSTEM_DIRECTORY, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
 
 		// Delete test files directories.
@@ -1024,9 +1108,21 @@ class e107WebTestCase extends e107TestCase
 		simpletest_file_delete_recursive($system_files_directory);
 
 		// Remove all prefixed tables.
-		// TODO...
+		$sql = e107::getDb();
+		$sql->gen("SELECT table_name FROM information_schema.tables WHERE table_schema='" . $mySQLdefaultdb . "' AND table_name LIKE '" . $this->databasePrefix . "%'");
 
-		// Get back to the original connection prefix.
+		$tables = array();
+		while($row = $sql->fetch())
+		{
+			$tables[] = $row['table_name'];
+		}
+
+		if(!empty($tables))
+		{
+			$sql->gen("DROP TABLE " . implode(', ', $tables));
+		}
+
+		// Restore the original connection prefix.
 		// Get all registered instances.
 		$instances = e107::getRegistry('_all_');
 		// Find DB instances and replace MySQL prefix on them.
@@ -1045,7 +1141,364 @@ class e107WebTestCase extends e107TestCase
 		$this->additionalCurlOptions = array();
 
 		// Close the CURL handler.
-		// TODO...
+		$this->curlClose();
+	}
+
+	/**
+	 * Initializes the cURL connection.
+	 *
+	 * If the httpauth_credentials variable is set, this function will add HTTP authentication headers.
+	 * This is necessary for testing sites that are protected by login credentials from public access.
+	 * See the description of $curl_options for other options.
+	 */
+	protected function curlInitialize()
+	{
+		global $base_url;
+
+		if(!isset($this->curlHandle))
+		{
+			$this->curlHandle = curl_init();
+			$curl_options = array(
+				CURLOPT_COOKIEJAR      => $this->cookieFile,
+				CURLOPT_URL            => $base_url,
+				CURLOPT_FOLLOWLOCATION => false,
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_SSL_VERIFYPEER => false, // Required to make the tests run on https.
+				CURLOPT_SSL_VERIFYHOST => false, // Required to make the tests run on https.
+				CURLOPT_HEADERFUNCTION => array(&$this, 'curlHeaderCallback'),
+				CURLOPT_USERAGENT      => $this->databasePrefix,
+			);
+			if(isset($this->httpauth_credentials))
+			{
+				$curl_options[CURLOPT_HTTPAUTH] = $this->httpauth_method;
+				$curl_options[CURLOPT_USERPWD] = $this->httpauth_credentials;
+			}
+			curl_setopt_array($this->curlHandle, $this->additionalCurlOptions + $curl_options);
+
+			// By default, the child session name should be the same as the parent.
+			$this->session_name = session_name();
+		}
+		// We set the user agent header on each request so as to use the current
+		// time and a new uniqid.
+		if(preg_match('/simpletest\d+/', $this->databasePrefix, $matches))
+		{
+			curl_setopt($this->curlHandle, CURLOPT_USERAGENT, $this->generateTestUa($matches[0]));
+		}
+	}
+
+	/**
+	 * Initializes and executes a cURL request.
+	 *
+	 * @param $curl_options
+	 *   An associative array of cURL options to set, where the keys are constants defined by the cURL library.
+	 *   For a list of valid options, see http://www.php.net/manual/function.curl-setopt.php
+	 * @param bool $redirect
+	 *   FALSE if this is an initial request, TRUE if this request is the result of a redirect.
+	 *
+	 * @return string
+	 *   The content returned from the call to curl_exec().
+	 *
+	 * @see curlInitialize()
+	 */
+	protected function curlExec($curl_options, $redirect = false)
+	{
+		$this->curlInitialize();
+
+		// cURL incorrectly handles URLs with a fragment by including the fragment in the request to the server,
+		// causing some web servers to reject the request citing "400 - Bad Request". To prevent this, we strip the
+		// fragment from the request.
+		// TODO: Remove this, since fixed in curl 7.20.0.
+		if(!empty($curl_options[CURLOPT_URL]) && strpos($curl_options[CURLOPT_URL], '#'))
+		{
+			$original_url = $curl_options[CURLOPT_URL];
+			$curl_options[CURLOPT_URL] = strtok($curl_options[CURLOPT_URL], '#');
+		}
+
+		$url = empty($curl_options[CURLOPT_URL]) ? curl_getinfo($this->curlHandle, CURLINFO_EFFECTIVE_URL) : $curl_options[CURLOPT_URL];
+
+		if(!empty($curl_options[CURLOPT_POST]))
+		{
+			// This is a fix for the Curl library to prevent Expect: 100-continue headers in POST requests, that may
+			// cause unexpected HTTP response codes from some webservers (like lighttpd that returns a 417 error code).
+			// It is done by setting an empty "Expect" header field that is not overwritten by Curl.
+			$curl_options[CURLOPT_HTTPHEADER][] = 'Expect:';
+		}
+		curl_setopt_array($this->curlHandle, $this->additionalCurlOptions + $curl_options);
+
+		if(!$redirect)
+		{
+			// Reset headers, the session ID and the redirect counter.
+			$this->session_id = null;
+			$this->headers = array();
+			$this->redirect_count = 0;
+		}
+
+		$content = curl_exec($this->curlHandle);
+		$status = curl_getinfo($this->curlHandle, CURLINFO_HTTP_CODE);
+
+		$maximum_redirects = 5;
+
+		// cURL incorrectly handles URLs with fragments, so instead of letting cURL handle redirects we take of them
+		// ourselves to to prevent fragments being sent to the web server as part of the request.
+		// TODO: Remove this, since fixed in curl 7.20.0.
+		if(in_array($status, array(300, 301, 302, 303, 305, 307)) && $this->redirect_count < $maximum_redirects)
+		{
+			if($this->e107GetHeaders('location'))
+			{
+				$this->redirect_count++;
+				$curl_options = array();
+				$curl_options[CURLOPT_URL] = $this->e107GetHeaders('location');
+				$curl_options[CURLOPT_HTTPGET] = true;
+				return $this->curlExec($curl_options, true);
+			}
+		}
+
+		$this->e107SetContent($content, isset($original_url) ? $original_url : curl_getinfo($this->curlHandle, CURLINFO_EFFECTIVE_URL));
+		$message_vars = array(
+			'x' => !empty($curl_options[CURLOPT_NOBODY]) ? 'HEAD' : (empty($curl_options[CURLOPT_POSTFIELDS]) ? 'GET' : 'POST'),
+			'y' => isset($original_url) ? $original_url : $url,
+			'w' => $status,
+			'z' => strlen($this->e107GetContent()),
+		);
+		$message = e107::getParser()->lanVars('[x] [y] returned [w] ([z]).', $message_vars);
+		$this->assertTrue($this->e107GetContent() !== false, $message, 'Browser');
+		return $this->e107GetContent();
+	}
+
+	/**
+	 * Reads headers and registers errors received from the tested site.
+	 *
+	 * @param $curlHandler
+	 *   The cURL handler.
+	 * @param $header
+	 *   An header.
+	 *
+	 * @return int
+	 */
+	protected function curlHeaderCallback($curlHandler, $header)
+	{
+		$this->headers[] = $header;
+
+		// Errors are being sent via X-E107-Assertion-* headers, generated in the exact form required by
+		// e107WebTestCase::error().
+		if(preg_match('/^X-E107-Assertion-[0-9]+: (.*)$/', $header, $matches))
+		{
+			// Call e107WebTestCase::error() with the parameters from the header.
+			call_user_func_array(array(&$this, 'error'), unserialize(urldecode($matches[1])));
+		}
+
+		// Save cookies.
+		if(preg_match('/^Set-Cookie: ([^=]+)=(.+)/', $header, $matches))
+		{
+			$name = $matches[1];
+			$parts = array_map('trim', explode(';', $matches[2]));
+			$value = array_shift($parts);
+			$this->cookies[$name] = array('value' => $value, 'secure' => in_array('secure', $parts));
+			if($name == $this->session_name)
+			{
+				if($value != 'deleted')
+				{
+					$this->session_id = $value;
+				}
+				else
+				{
+					$this->session_id = null;
+				}
+			}
+		}
+
+		// This is required by cURL.
+		return strlen($header);
+	}
+
+	/**
+	 * Close the cURL handler and unset the handler.
+	 */
+	protected function curlClose()
+	{
+		if(isset($this->curlHandle))
+		{
+			curl_close($this->curlHandle);
+			unset($this->curlHandle);
+		}
+	}
+
+	/**
+	 * Gets the HTTP response headers of the requested page. Normally we are only interested in the headers returned
+	 * by the last request. However, if a page is redirected or HTTP authentication is in use, multiple requests will
+	 * be required to retrieve the page. Headers from all requests may be requested by passing TRUE to this function.
+	 *
+	 * @param $all_requests
+	 *   Boolean value specifying whether to return headers from all requests instead of just the last request.
+	 *   Defaults to FALSE.
+	 *
+	 * @return string
+	 *   A name/value array if headers from only the last request are requested.
+	 *   If headers from all requests are requested, an array of name/value arrays, one for each request.
+	 *
+	 *   The pseudonym ":status" is used for the HTTP status line.
+	 *   Values for duplicate headers are stored as a single comma-separated list.
+	 */
+	protected function e107GetHeaders($all_requests = false)
+	{
+		$request = 0;
+		$headers = array($request => array());
+		foreach($this->headers as $header)
+		{
+			$header = trim($header);
+			if($header === '')
+			{
+				$request++;
+			}
+			else
+			{
+				if(strpos($header, 'HTTP/') === 0)
+				{
+					$name = ':status';
+					$value = $header;
+				}
+				else
+				{
+					list($name, $value) = explode(':', $header, 2);
+					$name = strtolower($name);
+				}
+				if(isset($headers[$request][$name]))
+				{
+					$headers[$request][$name] .= ',' . trim($value);
+				}
+				else
+				{
+					$headers[$request][$name] = trim($value);
+				}
+			}
+		}
+		if(!$all_requests)
+		{
+			$headers = array_pop($headers);
+		}
+		return $headers;
+	}
+
+	/**
+	 * Gets the value of an HTTP response header. If multiple requests were required to retrieve the page, only the
+	 * headers from the last request will be checked by default. However, if TRUE is passed as the second argument,
+	 * all requests will be processed from last to first until the header is found.
+	 *
+	 * @param $name
+	 *   The name of the header to retrieve. Names are case-insensitive (see RFC 2616 section 4.2).
+	 * @param $all_requests
+	 *   Boolean value specifying whether to check all requests if the header is not found in the last request.
+	 * Defaults to FALSE.
+	 *
+	 * @return string
+	 *   The HTTP header value or FALSE if not found.
+	 */
+	protected function e107GetHeader($name, $all_requests = false)
+	{
+		$name = strtolower($name);
+		$header = false;
+		if($all_requests)
+		{
+			foreach(array_reverse($this->e107GetHeaders(true)) as $headers)
+			{
+				if(isset($headers[$name]))
+				{
+					$header = $headers[$name];
+					break;
+				}
+			}
+		}
+		else
+		{
+			$headers = $this->e107GetHeaders();
+			if(isset($headers[$name]))
+			{
+				$header = $headers[$name];
+			}
+		}
+		return $header;
+	}
+
+	/**
+	 * Gets the current raw HTML of requested page.
+	 */
+	protected function e107GetContent()
+	{
+		return $this->content;
+	}
+
+	/**
+	 * Gets the value of the e107.settings JavaScript variable for the currently loaded page.
+	 */
+	protected function e107GetSettings()
+	{
+		return $this->e107Settings;
+	}
+
+	/**
+	 * Sets the raw HTML content. This can be useful when a page has been fetched outside of the internal browser
+	 * and assertions need to be made on the returned page.
+	 */
+	protected function e107SetContent($content, $url = 'internal:')
+	{
+		$this->content = $content;
+		$this->url = $url;
+		$this->plainTextContent = false;
+		$this->elements = false;
+		$this->e107Settings = array();
+
+		if(preg_match('/jQuery\.extend\(e107\.settings, (.*?)\);/', $content, $matches))
+		{
+			$this->e107Settings = e107::getParser()->toJSON($matches[1]);
+		}
+	}
+
+	/**
+	 * Sets the value of the e107.settings JavaScript variable for the currently loaded page.
+	 */
+	protected function e107SetSettings($settings)
+	{
+		$this->e107Settings = $settings;
+	}
+
+	/**
+	 * Generates a user agent string with a HMAC and timestamp for simpletest.
+	 */
+	protected function generateTestUa($prefix)
+	{
+		static $key;
+
+		if(!isset($key))
+		{
+			$hash = hash('sha256', serialize($this->databasePrefix));
+			$key = $hash . filectime(__FILE__) . fileinode(__FILE__);
+		}
+		// Generate a moderately secure HMAC based on the database credentials.
+		$salt = uniqid('', true);
+		$check_string = $prefix . ';' . time() . ';' . $salt;
+		return $check_string . ';' . $this->hmacBase64($check_string, $key);
+	}
+
+	/**
+	 * Calculates a base-64 encoded, URL-safe sha-256 hmac.
+	 *
+	 * @param string $data
+	 *   String to be validated with the hmac.
+	 * @param string $key
+	 *   A secret string key.
+	 *
+	 * @return string
+	 *   A base-64 encoded sha-256 hmac, with + replaced with -, / with _ and any = padding characters removed.
+	 */
+	protected function hmacBase64($data, $key)
+	{
+		// Casting $data and $key to strings here is necessary to avoid empty string
+		// results of the hash function if they are not scalar values. As this
+		// function is used in security-critical contexts like token validation it is
+		// important that it never returns an empty string.
+		$hmac = base64_encode(hash_hmac('sha256', (string) $data, (string) $key, true));
+		// Modify the hmac so it's safe to use in URLs.
+		return strtr($hmac, array('+' => '-', '/' => '_', '=' => ''));
 	}
 
 }
