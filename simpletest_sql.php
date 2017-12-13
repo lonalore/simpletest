@@ -11,7 +11,7 @@ CREATE TABLE `simpletest` (
 `message_group` varchar(255) NOT NULL DEFAULT '' COMMENT 'The message group this message belongs to. For example warning, browser, user.',
 `function` varchar(255) NOT NULL DEFAULT '' COMMENT 'Name of the assertion function or method that created this message.',
 `line` int(11) NOT NULL DEFAULT '0' COMMENT 'Line number on which the function is called.',
-`file` varchar(255) NOT NULL DEFAULT '' COMMENT ''Name of the file where the function is called.',
+`file` varchar(255) NOT NULL DEFAULT '' COMMENT 'Name of the file where the function is called.',
 PRIMARY KEY (`message_id`),
 KEY `reporter` (`test_class`, `message_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;

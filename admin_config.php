@@ -41,6 +41,8 @@ class simpletest_admin extends e_admin_dispatcher
 		'main' => array(
 			'controller' => 'simpletest_admin_ui',
 			'path'       => null,
+			'ui'         => 'simpletest_admin_form_ui',
+			'uipath'     => null
 		),
 	);
 
@@ -65,6 +67,10 @@ class simpletest_admin extends e_admin_dispatcher
 	 * @var array
 	 */
 	protected $adminMenu = array(
+		'main/list' => array(
+			'caption' => LAN_PLUGIN_ST_ADMIN_22,
+			'perm'    => 'P',
+		),
 		'main/prefs' => array(
 			'caption' => LAN_PLUGIN_ST_ADMIN_01,
 			'perm'    => 'P',
@@ -188,8 +194,25 @@ class simpletest_admin_ui extends e_admin_ui
 
 	}
 
+	public function listPage()
+	{
+		$ns = e107::getRender();
+
+		// Output.
+		$html = '';
+
+		$ns->tablerender(LAN_PLUGIN_ST_ADMIN_22, $html);
+	}
+
 }
 
+/**
+ * Class simpletest_admin_form.
+ */
+class simpletest_admin_form extends e_admin_form_ui
+{
+
+}
 
 new simpletest_admin();
 
