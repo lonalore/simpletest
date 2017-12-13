@@ -12,6 +12,8 @@ if(!e107::isInstalled('simpletest') || !getperms("P"))
 	e107::redirect(e_BASE . 'index.php');
 }
 
+e107_require_once(e_PLUGIN . 'simpletest/includes/helpers.php');
+
 // [PLUGINS]/simpletest/languages/[LANGUAGE]/[LANGUAGE]_admin.php
 e107::lan('simpletest', true, true);
 
