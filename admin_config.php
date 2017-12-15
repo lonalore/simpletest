@@ -211,6 +211,11 @@ class simpletest_admin_ui extends e_admin_ui
 		}
 	}
 
+	public function resultsPage()
+	{
+		e107::getRender()->tablerender('Results', $_GET['id']);
+	}
+
 	/**
 	 * Submit callback to prepare and run tests.
 	 */
@@ -237,9 +242,15 @@ class simpletest_admin_ui extends e_admin_ui
 			e107::redirect(e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=list');
 		}
 
+		$test_id = e107::getDb()->insert('simpletest_test_id', array('last_prefix' => ''));
+
+		// Clear out the previous verbose files.
+		$system_files_directory = e_SYSTEM_BASE . 'simpletest/verbose';
+		simpletest_file_delete_recursive($system_files_directory);
+
 		$batch = array(
 			'operations'       => array(
-				array('simpletest_run_tests_process', array($tests)),
+				array('simpletest_run_tests_process', array($tests, $test_id)),
 			),
 			'finished'         => 'simpletest_run_tests_finished',
 			'title'            => 'Running tests',
@@ -249,7 +260,7 @@ class simpletest_admin_ui extends e_admin_ui
 			'file'             => '{e_PLUGIN}simpletest/includes/batch.php',
 		);
 
-		$finished = e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=list';
+		$finished = e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=results&id=' . $test_id;
 		$process = e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=run';
 
 		batch_set($batch);

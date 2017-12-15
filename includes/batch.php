@@ -8,7 +8,7 @@
 /**
  * Batch Operation Callback.
  */
-function simpletest_run_tests_process($tests, &$context)
+function simpletest_run_tests_process($tests, $test_id, &$context)
 {
 	if(!isset($context['sandbox']['progress']))
 	{
@@ -41,12 +41,12 @@ function simpletest_run_tests_process($tests, &$context)
 			e107_include_once($file);
 
 			/** @var e107TestCase|e107UnitTestCase|e107WebTestCase|e107CloneTestCase $obj */
-			$obj = new $test['class']();
+			$obj = new $test['class']($test_id);
 			$obj->run();
 
 			$info = $obj->getInfo();
 
-			$test_results[$test['class']] = $test->results;
+			$test_results[$test['class']] = $obj->results;
 			foreach($test_results[$test['class']] as $key => $value)
 			{
 				$test_results[$key] += $value;
@@ -59,10 +59,11 @@ function simpletest_run_tests_process($tests, &$context)
 			$context['message'] .= '<div class="simpletest-' . ($test_results['#fail'] + $test_results['#exception'] ? 'fail' : 'pass') . '">';
 			$context['message'] .= 'Overall results: ' . _simpletest_format_summary_line($test_results);
 			$context['message'] .= '</div>';
-
-			$context['results'][] = $test['class'];
 		}
 	}
+
+	// The test_id is the only thing we need to save for the report page.
+	$context['results']['test_id'] = $test_id;
 
 	// Inform the batch engine that we are not finished,
 	// and provide an estimation of the completion level we reached.
@@ -75,7 +76,7 @@ function simpletest_run_tests_process($tests, &$context)
 /**
  * Batch 'finished' callback
  */
-function simpletest_run_tests_finished($success, $results, $operations)
+function simpletest_run_tests_finished($success, $results, $operations, $elapsed)
 {
 	$tp = e107::getParser();
 	$ms = e107::getMessage();

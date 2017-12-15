@@ -83,7 +83,11 @@ function simpletest_verbose($message, $original_file_directory = null, $test_cla
 	if($message && $file_directory)
 	{
 		$message = '<hr />ID #' . $id . ' (<a href="' . $class . '-' . ($id - 1) . '.html">Previous</a> | <a href="' . $class . '-' . ($id + 1) . '.html">Next</a>)<hr />' . $message;
-		file_put_contents($file_directory . "/simpletest/verbose/$class-$id.html", $message, FILE_APPEND);
+
+		$folder = $file_directory . "/simpletest/verbose";
+		simpletest_file_prepare_directory($folder);
+		file_put_contents($folder . "/$class-$id.html", $message, FILE_APPEND);
+
 		return $id++;
 	}
 
@@ -91,7 +95,7 @@ function simpletest_verbose($message, $original_file_directory = null, $test_cla
 	{
 		$prefs = e107::getPlugConfig('simpletest')->getPref();
 
-		$file_directory = $original_file_directory;
+		$file_directory = rtrim($original_file_directory, '/');
 		$class = $test_class;
 		$verbose = isset($prefs['verbose']) ? $prefs['verbose'] : true;
 		$directory = $file_directory . '/simpletest/verbose';
@@ -434,8 +438,7 @@ function simpletest_check_plain($text)
  */
 function simpletest_log_read($test_id, $prefix, $test_class, $during_test = false)
 {
-	// TODO replace ... with the current path for public files.
-	$log = '...' . ($during_test ? '' : '/simpletest/' . substr($prefix, 10)) . '/error.log';
+	$log = e_SYSTEM_BASE . ($during_test ? '' : 'simpletest/' . substr($prefix, 10)) . '/error.log';
 
 	$found = false;
 
@@ -579,8 +582,9 @@ function simpletest_generate_file($filename, $width, $lines, $type = 'binary-tex
 	}
 	$text = wordwrap($text, $width - 1, "\n", true) . "\n"; // Add \n for symetrical file.
 
-	// Create filename.
-	file_put_contents('........./' . $filename . '.txt', $text); // FIXME - directory path?!
+	$folder = e_SYSTEM_BASE . 'simpletest/generated';
+	simpletest_file_prepare_directory($folder);
+	file_put_contents($folder . '/' . $filename . '.txt', $text);
 
 	return $filename;
 }
@@ -669,13 +673,13 @@ function simpletest_clean_database()
  */
 function simpletest_clean_temporary_directories()
 {
-	$files = scandir('....../simpletest'); // FIXME - directory path?!
+	$files = scandir(e_SYSTEM_BASE . 'simpletest');
 
 	$count = 0;
 
 	foreach($files as $file)
 	{
-		$path = '....../simpletest/' . $file; // FIXME - directory path?!
+		$path = e_SYSTEM_BASE . 'simpletest/' . $file;
 
 		if(is_dir($path) && is_numeric($file))
 		{

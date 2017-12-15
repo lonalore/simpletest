@@ -42,6 +42,13 @@ abstract class e107TestCase
 	protected $databasePrefix = null;
 
 	/**
+	 * The original file directory, before it was changed for testing purposes.
+	 *
+	 * @var string
+	 */
+	protected $originalSystemDirectory = NULL;
+
+	/**
 	 * Time limit for the test.
 	 */
 	protected $timeLimit = 500;
@@ -130,7 +137,7 @@ abstract class e107TestCase
 		);
 
 		// Store assertion for display after the test has completed.
-		e107::getDb()->insert('simpletest', array('data' => $assertion), false);
+		e107::getDb()->insert('simpletest', $assertion, false);
 
 		// We do not use a ternary operator here to allow a breakpoint on test failure.
 		if($status == 'pass')
@@ -180,7 +187,7 @@ abstract class e107TestCase
 			'file'          => $caller['file'],
 		);
 
-		return e107::getDb()->insert('simpletest', array('data' => $assertion), false);
+		return e107::getDb()->insert('simpletest', $assertion, true);
 	}
 
 	/**
@@ -513,7 +520,7 @@ abstract class e107TestCase
 	{
 		$prefs = e107::getPlugConfig('simpletest')->getPref();
 
-		$original_file_directory = '';
+		$original_file_directory = rtrim(e_SYSTEM, '/');
 
 		// Initialize verbose debugging.
 		simpletest_verbose(null, $original_file_directory, get_class($this));
@@ -789,15 +796,15 @@ class e107UnitTestCase extends e107TestCase
 	 */
 	protected function setUp()
 	{
-		global $mySQLprefix, $MEDIA_DIRECTORY, $SYSTEM_DIRECTORY;
+		global $mySQLprefix;
 
 		// Generate temporary prefixed database to ensure that tests have a clean starting point.
 		$this->databasePrefix = 'simpletest' . mt_rand(1000, 1000000);
 
 		// Create test (media) directory.
-		$media_files_directory = rtrim($MEDIA_DIRECTORY, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
+		$media_files_directory = rtrim(e_MEDIA_BASE, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
 		// Create test (system) directory.
-		$system_files_directory = rtrim($SYSTEM_DIRECTORY, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
+		$system_files_directory = rtrim(e_SYSTEM_BASE, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
 
 		// Prepare directories.
 		simpletest_file_prepare_directory($media_files_directory, 1);
@@ -824,8 +831,6 @@ class e107UnitTestCase extends e107TestCase
 
 	protected function tearDown()
 	{
-		global $MEDIA_DIRECTORY, $SYSTEM_DIRECTORY;
-
 		// Get back to the original connection prefix.
 		// Get all registered instances.
 		$instances = e107::getRegistry('_all_');
@@ -841,9 +846,9 @@ class e107UnitTestCase extends e107TestCase
 		}
 
 		// Create test (media) directory.
-		$media_files_directory = rtrim($MEDIA_DIRECTORY, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
+		$media_files_directory = rtrim(e_MEDIA_BASE, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
 		// Create test (system) directory.
-		$system_files_directory = rtrim($SYSTEM_DIRECTORY, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
+		$system_files_directory = rtrim(e_SYSTEM_BASE, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
 
 		// Delete test files directories.
 		simpletest_file_delete_recursive($media_files_directory);
@@ -992,15 +997,13 @@ class e107WebTestCase extends e107TestCase
 	 */
 	protected function setUp()
 	{
-		global $mySQLprefix, $MEDIA_DIRECTORY, $SYSTEM_DIRECTORY;
+		global $mySQLprefix;
 
 		// Generate a temporary prefixed database to ensure that tests have a clean starting point.
 		$this->databasePrefix = 'simpletest' . mt_rand(1000, 1000000);
 
 		$update = array(
-			'data'  => array(
-				'last_prefix' => $this->databasePrefix,
-			),
+			'last_prefix' => $this->databasePrefix,
 			'WHERE' => 'test_id = ' . $this->testId,
 		);
 		e107::getDb()->update('simpletest_test_id', $update, false);
@@ -1021,9 +1024,9 @@ class e107WebTestCase extends e107TestCase
 		}
 
 		// Get path for test (media) directory.
-		$media_files_directory = rtrim($MEDIA_DIRECTORY, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
+		$media_files_directory = rtrim(e_MEDIA_BASE, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
 		// Get path for test (system) directory.
-		$system_files_directory = rtrim($SYSTEM_DIRECTORY, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
+		$system_files_directory = rtrim(e_SYSTEM_BASE, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
 
 		// Prepare directories.
 		simpletest_file_prepare_directory($media_files_directory, 1);
@@ -1088,7 +1091,7 @@ class e107WebTestCase extends e107TestCase
 	 */
 	protected function tearDown()
 	{
-		global $MEDIA_DIRECTORY, $SYSTEM_DIRECTORY, $mySQLdefaultdb;
+		global $mySQLdefaultdb;
 
 		// In case a fatal error occurred that was not in the test process read the log to pick up any fatal errors.
 		simpletest_log_read($this->testId, $this->databasePrefix, get_class($this), true);
@@ -1101,9 +1104,9 @@ class e107WebTestCase extends e107TestCase
 		}
 
 		// Get path for test (media) directory.
-		$media_files_directory = rtrim($MEDIA_DIRECTORY, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
+		$media_files_directory = rtrim(e_MEDIA_BASE, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
 		// Get path for test (system) directory.
-		$system_files_directory = rtrim($SYSTEM_DIRECTORY, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
+		$system_files_directory = rtrim(e_SYSTEM_BASE, '/') . '/simpletest/' . substr($this->databasePrefix, 10);
 
 		// Delete test files directories.
 		simpletest_file_delete_recursive($media_files_directory);
