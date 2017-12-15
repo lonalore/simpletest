@@ -187,7 +187,7 @@ abstract class e107TestCase
 			'file'          => $caller['file'],
 		);
 
-		return e107::getDb()->insert('simpletest', $assertion, true);
+		return e107::getDb()->insert('simpletest', $assertion, false);
 	}
 
 	/**
