@@ -31,11 +31,21 @@ class simpletest_shortcodes extends e_shortcode
 	/**
 	 * @return string
 	 */
-	function sc_panel_heading()
+	function sc_panel_title()
 	{
-		$html = '<a data-toggle="collapse" href="#' . $this->var['panel_id'] . '">';
-		$html .= $this->var['panel_title'];
-		$html .= '</a>';
+		$html = '';
+
+		if((bool) $this->var['options']['collapsible'] === true)
+		{
+			$html .= '<a data-toggle="collapse" href="#' . $this->var['options']['id'] . '">';
+		}
+
+		$html .= $this->var['title'];
+
+		if((bool) $this->var['options']['collapsible'] === true)
+		{
+			$html .= '</a>';
+		}
 
 		return $html;
 	}
@@ -45,7 +55,7 @@ class simpletest_shortcodes extends e_shortcode
 	 */
 	function sc_panel_body()
 	{
-		return $this->var['panel_body'];
+		return $this->var['body'];
 	}
 
 	/**
@@ -53,7 +63,7 @@ class simpletest_shortcodes extends e_shortcode
 	 */
 	function sc_panel_id()
 	{
-		return $this->var['panel_id'];
+		return $this->var['options']['id'];
 	}
 
 	/**
@@ -62,7 +72,7 @@ class simpletest_shortcodes extends e_shortcode
 	function sc_panel_class()
 	{
 		$class = 'panel-collapse collapse';
-		if((bool) $this->var['panel_collapsed'] === false)
+		if((bool) $this->var['options']['collapsible'] === false || (bool) $this->var['options']['collapsed'] === false)
 		{
 			$class .= ' in';
 		}
@@ -74,39 +84,7 @@ class simpletest_shortcodes extends e_shortcode
 	 */
 	function sc_panel_help()
 	{
-		return $this->var['panel_help'];
-	}
-
-	/**
-	 * @return string
-	 */
-	function sc_panel_field_id()
-	{
-		return $this->var['field_id'];
-	}
-
-	/**
-	 * @return string
-	 */
-	function sc_panel_field_label()
-	{
-		return $this->var['field_label'];
-	}
-
-	/**
-	 * @return string
-	 */
-	function sc_panel_field_help()
-	{
-		return $this->var['field_help'];
-	}
-
-	/**
-	 * @return string
-	 */
-	function sc_panel_field()
-	{
-		return $this->var['field'];
+		return $this->var['help'];
 	}
 
 }

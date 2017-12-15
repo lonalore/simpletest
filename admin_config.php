@@ -13,6 +13,8 @@ if(!e107::isInstalled('simpletest') || !getperms("P"))
 }
 
 e107_require_once(e_PLUGIN . 'simpletest/includes/helpers.php');
+// Includes main Batch API file.
+e107_require_once(e_PLUGIN . 'batch/includes/batch.php');
 
 // [PLUGINS]/simpletest/languages/[LANGUAGE]/[LANGUAGE]_admin.php
 e107::lan('simpletest', true, true);
@@ -69,7 +71,7 @@ class simpletest_admin extends e_admin_dispatcher
 	 * @var array
 	 */
 	protected $adminMenu = array(
-		'main/list' => array(
+		'main/list'  => array(
 			'caption' => LAN_PLUGIN_ST_ADMIN_22,
 			'perm'    => 'P',
 		),
@@ -196,17 +198,165 @@ class simpletest_admin_ui extends e_admin_ui
 
 	}
 
+	/**
+	 * Provides a Batch API page callback.
+	 */
+	public function runPage()
+	{
+		$output = _batch_page();
+
+		if($output !== false)
+		{
+			e107::getRender()->tablerender($output['caption'], $output['content']);
+		}
+	}
+
+	/**
+	 * Submit callback to prepare and run tests.
+	 */
+	public function submitPage()
+	{
+		$tests_all = simpletest_get_tests();
+		$tests_selected = !empty($_POST['tests']) ? $_POST['tests'] : array();
+
+		$tests = array();
+		foreach($tests_all as $group => $items)
+		{
+			foreach($items as $item)
+			{
+				if(in_array($item['class'], $tests_selected))
+				{
+					$tests[] = $item;
+				}
+			}
+		}
+
+		if(empty($tests))
+		{
+			e107::getMessage()->addError('No test was selected!', 'default', true);
+			e107::redirect(e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=list');
+		}
+
+		$batch = array(
+			'operations'       => array(
+				array('simpletest_run_tests_process', array($tests)),
+			),
+			'finished'         => 'simpletest_run_tests_finished',
+			'title'            => 'Running tests',
+			'init_message'     => 'Testing is starting.',
+			'progress_message' => 'Processed test @current out of @total.',
+			'error_message'    => 'Testing has encountered an error.',
+			'file'             => '{e_PLUGIN}simpletest/includes/batch.php',
+		);
+
+		$finished = e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=list';
+		$process = e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=run';
+
+		batch_set($batch);
+		batch_process($finished, $process);
+	}
+
+	/**
+	 * Provides a list with available tests.
+	 */
 	public function listPage()
 	{
+		$form = e107::getForm();
+		$msg = e107::getMessage();
 		$ns = e107::getRender();
+
+		e107::css('simpletest', 'assets/css/simpletest.css');
+		e107::js('simpletest', 'assets/js/simpletest.js');
+
+		$msg->addInfo('Select the test(s) or test group(s) you would like to run, and click Run tests.');
 
 		// Output.
 		$html = '';
 
-		$ns->tablerender(LAN_PLUGIN_ST_ADMIN_22, $html);
+		$action = e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=submit';
+		$html .= $form->open('simpletest-tests', 'post', $action);
+
+		$html .= '<label class="control-label toggle-all-label">';
+		$html .= $form->checkbox('select-all', 1, false, array('id' => 'simpletest-toggle-all')) . ' Select / Deselect all tests';
+		$html .= '</label>';
+
+		$tests = simpletest_get_tests();
+		foreach($tests as $group => $items)
+		{
+			$table = '';
+
+			$table .= '<table class="table table-striped">';
+			$table .= '<thead>';
+			$table .= '<tr>';
+			$table .= '<th>Class</th>';
+			$table .= '<th>Name / Description</th>';
+			$table .= '</tr>';
+			$table .= '</thead>';
+			$table .= '<tbody>';
+			foreach($items as $item)
+			{
+				$table .= '<tr>';
+				$table .= '<td>';
+				$table .= '<label class="control-label">';
+				$table .= $form->checkbox('tests[]', $item['class'], false) . ' ' . $item['class'];
+				$table .= '</label>';
+				$table .= '</td>';
+				$table .= '<td><strong>' . $item['name'] . '</strong><p class="small">' . $item['description'] . '</p></td>';
+				$table .= '</tr>';
+			}
+			$table .= '</tbody>';
+			$table .= '</table>';
+
+			$html .= $this->getPanel($group, '', $table);
+		}
+
+		$html .= $form->submit('run', 'Run tests');
+		$html .= $form->close();
+
+		$ns->tablerender(null, $html);
+	}
+
+	/**
+	 * Helper function to render Bootstrap Panel.
+	 *
+	 * @param string $title
+	 *   Panel title.
+	 * @param string $help
+	 *   Help text, description.
+	 * @param string $body
+	 *   Panel body.
+	 * @param string $footer
+	 *   Panel footer.
+	 * @param array $options
+	 *   Panel options.
+	 *
+	 * @return string
+	 */
+	function getPanel($title = '', $help = '', $body = '', $footer = '', $options = array())
+	{
+		$tpl = e107::getTemplate('simpletest');
+		$sc = e107::getScBatch('simpletest', true);
+		$tp = e107::getParser();
+
+		$sc->setVars(array(
+			'title'   => $title,
+			'help'    => $help,
+			'body'    => $body,
+			'footer'  => $footer,
+			'options' => array(
+				'id'          => !empty($options['id']) ? $options['id'] : md5($title),
+				'collapsible' => isset($options['collapsible']) ? $options['collapsible'] : true,
+				'collapsed'   => isset($options['collapsed']) ? $options['collapsed'] : true,
+			),
+		));
+
+		$html = $tp->parseTemplate($tpl['PANEL'], true, $sc);
+
+		return $html;
 	}
 
 }
+
 
 /**
  * Class simpletest_admin_form.
@@ -215,6 +365,7 @@ class simpletest_admin_form extends e_admin_form_ui
 {
 
 }
+
 
 new simpletest_admin();
 

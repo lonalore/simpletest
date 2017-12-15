@@ -10,7 +10,7 @@
     <category>tools</category>
     <copyright>GNU General Public License</copyright>
     <adminLinks>
-        <link url='admin_config.php' description='LAN_CONFIGURE' icon='images/simpletest_32.png' iconSmall='images/simpletest_16.png' icon128='images/simpletest_128.png' primary='true'>LAN_CONFIGURE</link>
+        <link url='admin_config.php' description='LAN_CONFIGURE' icon='assets/images/simpletest_32.png' iconSmall='assets/images/simpletest_16.png' icon128='assets/images/simpletest_128.png' primary='true'>LAN_CONFIGURE</link>
     </adminLinks>
     <pluginPrefs>
         <pref name='clear_results'>1</pref>

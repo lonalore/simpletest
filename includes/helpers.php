@@ -749,72 +749,118 @@ function simpletest_clean_results_table($test_id = null)
 	return 0;
 }
 
+function simpletest_get_tests()
+{
+	e107_require_once(e_PLUGIN . 'simpletest/simpletest.php');
+
+	$plugList = e107::getFile()->get_files(e_PLUGIN, "^([a-zA-Z0-9]+)\.(test)$", "standard", 2);
+
+	$tests = array();
+
+	foreach($plugList as $key => $details)
+	{
+		$path = $details['path'] . $details['fname'];
+		$classes = simpletest_get_class_from_file($path);
+
+		if(empty($classes))
+		{
+			continue;
+		}
+
+		if(empty($tests[$path]))
+		{
+			$tests[$path] = array();
+		}
+
+		foreach($classes as $class)
+		{
+			if(!isset($tests[$path][$class]))
+			{
+				$info = simpletest_get_test_info($path, $class);
+
+				if(!empty($info))
+				{
+					$tests[$path][$class] = $info;
+				}
+			}
+		}
+	}
+
+	$grouped = array();
+
+	foreach($tests as $path => $classes)
+	{
+		foreach($classes as $class => $info)
+		{
+			$group = !empty($info['group']) ? $info['group'] : 'Other';
+			$name = !empty($info['name']) ? $info['name'] : '';
+			$desc = !empty($info['description']) ? $info['description'] : '';
+			$deps = !empty($info['dependencies']) ? $info['dependencies'] : array();
+
+			if(!isset($grouped[$group]))
+			{
+				$grouped[$group] = array();
+			}
+
+			$grouped[$group][] = array(
+				'file'         => str_replace('../../e107_plugins/', '{e_PLUGIN}', $path),
+				'class'        => $class,
+				'group'        => $group,
+				'name'         => $name,
+				'description'  => $desc,
+				'dependencies' => $deps,
+			);
+		}
+	}
+
+	return $grouped;
+}
+
+function simpletest_get_test_info($file, $class)
+{
+	$info = array();
+
+	e107_require_once($file);
+
+	if(class_exists($class))
+	{
+		$test = new $class();
+
+		if(method_exists($test, 'getInfo'))
+		{
+			$info = $test->getInfo();
+		}
+	}
+
+	return $info;
+}
+
 /**
  * @param $path_to_file
  * @return mixed|string
  */
 function simpletest_get_class_from_file($path_to_file)
 {
-	// Grab the contents of the file.
+	$classes = array();
+
 	$contents = file_get_contents($path_to_file);
+	$tokens = token_get_all($contents);
+	$count = count($tokens);
 
-	// Start with a blank namespace and class.
-	$namespace = $class = "";
-
-	// Set helper values to know that we have found the namespace/class token and need to collect the string values
-	// after them.
-	$getting_namespace = $getting_class = false;
-
-	// Go through each token and evaluate it as necessary.
-	foreach(token_get_all($contents) as $token)
+	for($i = 2; $i < $count; $i++)
 	{
-		// If this token is the namespace declaring, then flag that the next tokens will be the namespace name.
-		if(is_array($token) && $token[0] == T_NAMESPACE)
+		if(!isset($tokens[$i]) || !is_array($tokens[$i]) || !isset($tokens[$i - 2]) || !is_array($tokens[$i - 2]))
 		{
-			$getting_namespace = true;
+			continue;
 		}
 
-		// If this token is the class declaring, then flag that the next tokens will be the class name.
-		if(is_array($token) && $token[0] == T_CLASS)
+		if($tokens[$i - 2][0] === T_CLASS && $tokens[$i - 1][0] === T_WHITESPACE && $tokens[$i][0] === T_STRING)
 		{
-			$getting_class = true;
-		}
-
-		// While we're grabbing the namespace name.
-		if($getting_namespace === true)
-		{
-			// If the token is a string or the namespace separator.
-			if(is_array($token) && in_array($token[0], [T_STRING, T_NS_SEPARATOR]))
-			{
-				// Append the token's value to the name of the namespace.
-				$namespace .= $token[1];
-			}
-			else
-			{
-				if($token === ';')
-				{
-					// If the token is the semicolon, then we're done with the namespace declaration.
-					$getting_namespace = false;
-				}
-			}
-		}
-
-		// While we're grabbing the class name.
-		if($getting_class === true)
-		{
-			// If the token is a string, it's the name of the class.
-			if(is_array($token) && $token[0] == T_STRING)
-			{
-				// Store the token's value as the class name.
-				$class = $token[1];
-
-				// Got what we need, stope here.
-				break;
-			}
+			$class_name = $tokens[$i][1];
+			$classes[] = $class_name;
 		}
 	}
 
-	// Build the fully-qualified class name and return it.
-	return $namespace ? $namespace . '\\' . $class : $class;
+	return $classes;
 }
 

@@ -1,30 +1,41 @@
 <?php
 
+/**
+ * @file
+ * Contains LibrariesUnitTest.
+ */
+
 
 /**
- * Test required plugins for tests.
+ * Tests basic Libraries API functions.
  */
-class SimpleTestMissingDependentPluginUnitTest extends e107UnitTestCase
+class LibrariesUnitTest extends e107UnitTestCase
 {
 
+	/**
+	 * Provides metadata about this test.
+	 *
+	 * @return array
+	 *   An array of test metadata with the following keys:
+	 *   - name: The name of the test.
+	 *   - description: The description of the test.
+	 *   - group: The group of the test.
+	 */
 	public static function getInfo()
 	{
 		return array(
-			'name'         => 'Dependent plugin test',
-			'description'  => 'This test should not load since it requires a plugin that is not found.',
-			'group'        => 'SimpleTest',
-			'dependencies' => array(
-				'simpletest_missing_plugin',
-			),
+			'name'        => 'Libraries API unit tests',
+			'description' => 'Tests basic functions provided by Libraries API.',
+			'group'       => 'Libraries API',
 		);
 	}
 
 	/**
-	 * Ensure that this test will not be loaded despite its dependency.
+	 * Tests e107::library('detect', '...').
 	 */
-	protected function testFail()
+	public function testLibrariesGetPath()
 	{
-		$this->fail('Running test with missing required plugin.');
+		$this->assertEqual(e107::library('detect', 'example'), false, "e107::library('detect', '...') returns false for a missing library.");
 	}
 
 }
