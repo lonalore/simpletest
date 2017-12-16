@@ -218,10 +218,7 @@ abstract class e107TestCase
 
 		// The first element is the call. The second element is the caller.
 		// We skip calls that occurred in one of the methods of our base classes or in an assertion function.
-		while(($caller = $backtrace[1]) &&
-			((isset($caller['class']) && isset($this->skipClasses[$caller['class']])) ||
-				substr($caller['function'], 0, 6) == 'assert'))
-		{
+		while(($caller = $backtrace[1]) && ((isset($caller['class']) && isset($this->skipClasses[$caller['class']])) || substr($caller['function'], 0, 6) == 'assert')){
 			// We remove that call.
 			array_shift($backtrace);
 		}
@@ -520,7 +517,7 @@ abstract class e107TestCase
 	{
 		$prefs = e107::getPlugConfig('simpletest')->getPref();
 
-		$original_file_directory = rtrim(e_SYSTEM, '/');
+		$original_file_directory = rtrim(e_SYSTEM_BASE, '/');
 
 		// Initialize verbose debugging.
 		simpletest_verbose(null, $original_file_directory, get_class($this));

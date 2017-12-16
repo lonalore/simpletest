@@ -374,14 +374,19 @@ function simpletest_decode_exception($exception)
 	// For PDOException errors, we try to return the initial caller, skipping internal functions of the database layer.
 	if($exception instanceof PDOException)
 	{
-		// The first element in the stack is the call, the second element gives us the caller.
 		// We skip calls that occurred in one of the classes of the database layer or in one of its global functions.
-		$db_functions = array('db_Query', 'db_Query_all', 'db_QueryCount');
+		$db_functions = array(
+			'db_Query',
+			'db_Query_all',
+			'db_QueryCount',
+			'db_Insert',
+			'db_Replace',
+			'db_Update',
+			'db_UpdateArray',
+		);
 
-		while(!empty($backtrace[1]) && ($caller = $backtrace[1]) &&
-			((isset($caller['class']) && (strpos($caller['class'], 'db') !== false || strpos($caller['class'], 'e_db_mysql') !== false || strpos($caller['class'], 'PDO') !== false)) ||
-				in_array($caller['function'], $db_functions)))
-		{
+		// The first element in the stack is the call, the second element gives us the caller.
+		while(!empty($backtrace[1]) && ($caller = $backtrace[1]) && ((isset($caller['class']) && (strpos($caller['class'], 'db') !== false || strpos($caller['class'], 'e_db_mysql') !== false || strpos($caller['class'], 'PDO') !== false)) || in_array($caller['function'], $db_functions))) {
 			// We remove that call.
 			array_shift($backtrace);
 		}
