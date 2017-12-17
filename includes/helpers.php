@@ -386,7 +386,8 @@ function simpletest_decode_exception($exception)
 		);
 
 		// The first element in the stack is the call, the second element gives us the caller.
-		while(!empty($backtrace[1]) && ($caller = $backtrace[1]) && ((isset($caller['class']) && (strpos($caller['class'], 'db') !== false || strpos($caller['class'], 'e_db_mysql') !== false || strpos($caller['class'], 'PDO') !== false)) || in_array($caller['function'], $db_functions))) {
+		while(!empty($backtrace[1]) && ($caller = $backtrace[1]) && ((isset($caller['class']) && (strpos($caller['class'], 'db') !== false || strpos($caller['class'], 'e_db_mysql') !== false || strpos($caller['class'], 'PDO') !== false)) || in_array($caller['function'], $db_functions)))
+		{
 			// We remove that call.
 			array_shift($backtrace);
 		}
@@ -873,3 +874,31 @@ function simpletest_get_class_from_file($path_to_file)
 	return $classes;
 }
 
+/**
+ * Get test results for $test_id.
+ *
+ * @param int $test_id
+ *   The test_id to retrieve results of.
+ *
+ * @return array
+ *   Array of results grouped by test_class.
+ */
+function simpletest_result_get($test_id)
+{
+	$db = e107::getDb();
+	$db->select('simpletest', '*', 'test_id = ' . (int) $test_id . ' ORDER BY test_class, message_id ASC');
+
+	$test_results = array();
+
+	while($row = $db->fetch())
+	{
+		if(!isset($test_results[$row['test_class']]))
+		{
+			$test_results[$row['test_class']] = array();
+		}
+
+		$test_results[$row['test_class']][] = $row;
+	}
+
+	return $test_results;
+}

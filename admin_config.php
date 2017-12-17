@@ -199,75 +199,6 @@ class simpletest_admin_ui extends e_admin_ui
 	}
 
 	/**
-	 * Provides a Batch API page callback.
-	 */
-	public function runPage()
-	{
-		$output = _batch_page();
-
-		if($output !== false)
-		{
-			e107::getRender()->tablerender($output['caption'], $output['content']);
-		}
-	}
-
-	public function resultsPage()
-	{
-		e107::getRender()->tablerender('Results', $_GET['id']);
-	}
-
-	/**
-	 * Submit callback to prepare and run tests.
-	 */
-	public function submitPage()
-	{
-		$tests_all = simpletest_get_tests();
-		$tests_selected = !empty($_POST['tests']) ? $_POST['tests'] : array();
-
-		$tests = array();
-		foreach($tests_all as $group => $items)
-		{
-			foreach($items as $item)
-			{
-				if(in_array($item['class'], $tests_selected))
-				{
-					$tests[] = $item;
-				}
-			}
-		}
-
-		if(empty($tests))
-		{
-			e107::getMessage()->addError('No test was selected!', 'default', true);
-			e107::redirect(e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=list');
-		}
-
-		$test_id = e107::getDb()->insert('simpletest_test_id', array('last_prefix' => ''));
-
-		// Clear out the previous verbose files.
-		$system_files_directory = e_SYSTEM_BASE . 'simpletest/verbose';
-		simpletest_file_delete_recursive($system_files_directory);
-
-		$batch = array(
-			'operations'       => array(
-				array('simpletest_run_tests_process', array($tests, $test_id)),
-			),
-			'finished'         => 'simpletest_run_tests_finished',
-			'title'            => 'Running tests',
-			'init_message'     => 'Testing is starting.',
-			'progress_message' => 'Processed test @current out of @total.',
-			'error_message'    => 'Testing has encountered an error.',
-			'file'             => '{e_PLUGIN}simpletest/includes/batch.php',
-		);
-
-		$finished = e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=results&id=' . $test_id;
-		$process = e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=run';
-
-		batch_set($batch);
-		batch_process($finished, $process);
-	}
-
-	/**
 	 * Provides a list with available tests.
 	 */
 	public function listPage()
@@ -325,6 +256,93 @@ class simpletest_admin_ui extends e_admin_ui
 		$html .= $form->close();
 
 		$ns->tablerender(null, $html);
+	}
+
+	/**
+	 * Submit callback to prepare and run tests.
+	 */
+	public function submitPage()
+	{
+		$tests_all = simpletest_get_tests();
+		$tests_selected = !empty($_POST['tests']) ? $_POST['tests'] : array();
+
+		$tests = array();
+		foreach($tests_all as $group => $items)
+		{
+			foreach($items as $item)
+			{
+				if(in_array($item['class'], $tests_selected))
+				{
+					$tests[] = $item;
+				}
+			}
+		}
+
+		if(empty($tests))
+		{
+			e107::getMessage()->addError('No test was selected!', 'default', true);
+			e107::redirect(e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=list');
+		}
+
+		$test_id = e107::getDb()->insert('simpletest_test_id', array('last_prefix' => ''));
+
+		// Clear out the previous verbose files.
+		$system_files_directory = e_SYSTEM_BASE . 'simpletest/verbose';
+		simpletest_file_delete_recursive($system_files_directory);
+
+		$batch = array(
+			'operations'       => array(
+				array('simpletest_run_tests_process', array($tests, $test_id)),
+			),
+			'finished'         => 'simpletest_run_tests_finished',
+			'title'            => 'Running tests',
+			'init_message'     => 'Testing is starting.',
+			'progress_message' => 'Processed test @current out of @total.',
+			'error_message'    => 'Testing has encountered an error.',
+			'file'             => '{e_PLUGIN}simpletest/includes/batch.php',
+		);
+
+		$finished = e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=results&id=' . $test_id;
+		$process = e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=run';
+
+		batch_set($batch);
+		batch_process($finished, $process);
+	}
+
+	/**
+	 * Provides a Batch API page callback.
+	 */
+	public function runPage()
+	{
+		e107::css('simpletest', 'assets/css/simpletest.css');
+
+		$output = _batch_page();
+
+		if($output !== false)
+		{
+			e107::getRender()->tablerender($output['caption'], $output['content']);
+		}
+	}
+
+	public function resultsPage()
+	{
+		$results = array();
+
+		if (isset($_GET['id']) && is_numeric($_GET['id']) && !$results = simpletest_result_get($_GET['id'])) {
+			e107::getMessage()->addWarning('No test results to display.', 'default', true);
+			e107::redirect(e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=list');
+		}
+
+		e107::css('simpletest', 'assets/css/simpletest.css');
+		e107::js('simpletest', 'assets/js/simpletest.js');
+
+		$html = '';
+
+		print_a($results);
+
+		// $html .= $this->getPanel('', '', '');
+
+		e107::getRender()->tablerender('Results', $html);
 	}
 
 	/**
