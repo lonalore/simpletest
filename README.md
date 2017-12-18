@@ -37,38 +37,15 @@ The database tables and files directory are not created for unit tests. This mak
 Put this code to the end of your `e107_config.php` file.
 
 ```php
-/**
- * If running nginx, implement getallheaders our-self.
- *
- * Code is taken from http://php.net/manual/en/function.getallheaders.php
- */
-if(!function_exists('getallheaders'))
+if(!empty($_SERVER['HTTP_USER_AGENT']) && strpos($_SERVER['HTTP_USER_AGENT'], 'simpletest') === 0)
 {
-	function getallheaders()
-	{
-		$headers = array();
-
-		foreach($_SERVER as $name => $value)
-		{
-			if(substr($name, 0, 5) == 'HTTP_')
-			{
-				$headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
-			}
-		}
-
-		return $headers;
-	}
-}
-
-if(!empty($getHeaders = getallheaders()) && array_key_exists('SIMPLETEST_PREFIX', $getHeaders))
-{
+	$exploded = explode(';', $_SERVER['HTTP_USER_AGENT']);
 	// Use the test tables.
-	$mySQLprefix = $getHeaders['SIMPLETEST_PREFIX'] . '_';
-
-	// Save files into test folders.
+	$mySQLprefix = $exploded[0] . '_';
+	// Change system folders.
 	$MEDIA_DIRECTORY .= 'simpletest/';
 	$SYSTEM_DIRECTORY .= 'simpletest/';
-
-	$E107_CONFIG['site_path'] = substr($getHeaders['SIMPLETEST_PREFIX'], 10);
+	// Set site [hash] for system folders.
+	$E107_CONFIG['site_path'] = substr($exploded[0], 10);
 }
 ```

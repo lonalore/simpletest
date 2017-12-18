@@ -137,7 +137,7 @@ abstract class e107TestCase
 		);
 
 		// Store assertion for display after the test has completed.
-		e107::getDb()->insert('simpletest', $assertion, false);
+		e107::getDb('SimpleTestE107TestCase')->insert('simpletest', $assertion, false);
 
 		// We do not use a ternary operator here to allow a breakpoint on test failure.
 		if($status == 'pass')
@@ -187,7 +187,7 @@ abstract class e107TestCase
 			'file'          => $caller['file'],
 		);
 
-		return e107::getDb()->insert('simpletest', $assertion, false);
+		return e107::getDb('SimpleTestE107TestCase')->insert('simpletest', $assertion, false);
 	}
 
 	/**
@@ -203,7 +203,7 @@ abstract class e107TestCase
 	 */
 	public static function deleteAssert($message_id)
 	{
-		return e107::getDb()->delete('simpletest', 'message_id = ' . (int) $message_id, false);
+		return e107::getDb('SimpleTestE107TestCase')->delete('simpletest', 'message_id = ' . (int) $message_id, false);
 	}
 
 	/**
@@ -822,7 +822,7 @@ class e107UnitTestCase extends e107TestCase
 		foreach($instances as $instance_id => $instance)
 		{
 			// If the instance is a DB instance.
-			if(strpos($instance_id, 'core/e107/singleton/db') === 0)
+			if(strpos($instance_id, 'SimpleTestE107TestCase') === false && strpos($instance_id, 'core/e107/singleton/db') === 0)
 			{
 				// Change MySQL prefix.
 				$instance->mySQLPrefix = $this->databasePrefix . '_';
@@ -842,7 +842,7 @@ class e107UnitTestCase extends e107TestCase
 		foreach($instances as $instance_id => $instance)
 		{
 			// If the instance is a DB instance.
-			if(strpos($instance_id, 'core/e107/singleton/db') === 0)
+			if(strpos($instance_id, 'SimpleTestE107TestCase') === false && strpos($instance_id, 'core/e107/singleton/db') === 0)
 			{
 				// Change MySQL prefix.
 				$instance->mySQLPrefix = $this->originalMySQLPrefix;
@@ -859,6 +859,9 @@ class e107UnitTestCase extends e107TestCase
 		// Delete test files directories.
 		simpletest_file_delete_recursive($media_files_directory);
 		simpletest_file_delete_recursive($system_files_directory);
+
+		// Empty user agent.
+		$_SERVER['HTTP_USER_AGENT'] = '';
 	}
 
 }
@@ -1015,7 +1018,7 @@ class e107WebTestCase extends e107TestCase
 			'last_prefix' => $this->databasePrefix,
 			'WHERE'       => 'test_id = ' . $this->testId,
 		);
-		e107::getDb()->update('simpletest_test_id', $update, false);
+		e107::getDb('SimpleTestE107TestCase')->update('simpletest_test_id', $update, false);
 
 		// Replace MySQL prefix on DB instances.
 		$this->originalMySQLPrefix = $mySQLprefix;
@@ -1025,7 +1028,7 @@ class e107WebTestCase extends e107TestCase
 		foreach($instances as $instance_id => $instance)
 		{
 			// If the instance is a DB instance.
-			if(strpos($instance_id, 'core/e107/singleton/db') === 0)
+			if(strpos($instance_id, 'SimpleTestE107TestCase') === false && strpos($instance_id, 'core/e107/singleton/db') === 0)
 			{
 				// Change MySQL prefix.
 				$instance->mySQLPrefix = $this->databasePrefix . '_';
@@ -1106,7 +1109,7 @@ class e107WebTestCase extends e107TestCase
 		simpletest_file_delete_recursive($system_files_directory);
 
 		// Remove all prefixed tables.
-		$sql = e107::getDb();
+		$sql = e107::getDb('SimpleTestE107TestCase');
 		$sql->gen("SELECT table_name FROM information_schema.tables WHERE table_schema='" . $mySQLdefaultdb . "' AND table_name LIKE 'simpletest%'");
 
 		$tables = array();
@@ -1127,7 +1130,7 @@ class e107WebTestCase extends e107TestCase
 		foreach($instances as $instance_id => $instance)
 		{
 			// If the instance is a DB instance.
-			if(strpos($instance_id, 'core/e107/singleton/db') === 0)
+			if(strpos($instance_id, 'SimpleTestE107TestCase') === false && strpos($instance_id, 'core/e107/singleton/db') === 0)
 			{
 				// Change MySQL prefix.
 				$instance->mySQLPrefix = $this->originalMySQLPrefix;

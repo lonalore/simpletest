@@ -215,7 +215,8 @@ class simpletest_admin_ui extends e_admin_ui
 		// Output.
 		$html = '';
 
-		$action = e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=submit';
+		// Action URL with [debug=-] to disable debug mode.
+		$action = e_PLUGIN_ABS . 'simpletest/admin_config.php?[debug=-]&mode=main&action=submit';
 		$html .= $form->open('simpletest-tests', 'post', $action);
 
 		$html .= '<label class="control-label toggle-all-label">';
@@ -328,9 +329,10 @@ class simpletest_admin_ui extends e_admin_ui
 
 	public function resultsPage()
 	{
-		$results = array();
+		$test_id = !empty($_GET['test']) ? (int) $_GET['test'] : 0;
+		$results = simpletest_result_get($test_id);
 
-		if (isset($_GET['test']) && is_numeric($_GET['test']) && !$results = simpletest_result_get($_GET['test'])) {
+		if (empty($results)) {
 			e107::getMessage()->addWarning('No test results to display.', 'default', true);
 			e107::redirect(e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=list');
 		}

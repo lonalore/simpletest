@@ -33,9 +33,10 @@ class LibraryUnitTest extends e107UnitTestCase
 	/**
 	 * Tests e107::library('detect', '...').
 	 */
-	public function testLibraryGetPath()
+	public function testLibraryDetect()
 	{
 		$this->assertEqual(e107::library('detect', 'example'), false, "e107::library('detect', '...') returns false for a missing library.");
+		$this->assertEqual(e107::library('detect', 'bootstrap'), true, "e107::library('detect', '...') returns true for a core library.");
 	}
 
 }
