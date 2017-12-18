@@ -26,8 +26,8 @@ The database tables and files directory are not created for unit tests. This mak
 
 ### Events provided by the SimpleTest plugin.
 
-| Event name          | Description                                                                                    | Event data                                              |
-| :------------------ |:-----------------------------------------------------------------------------------------------| :-------------------------------------------------------|
-| test_group_started  | A test group has started. This event is triggered just once at the beginning of a test group.  | N/A                                                     |
-| test_group_finished | A test group has finished. This event is triggered just once at the end of a test group.       | N/A                                                     |
-| test_finished       | An individual test has finished. This event is triggered when an individual test has finished. | The results of the test as gathered by e107WebTestCase. |
+| Event name                     | Description                                                                                    | Event data                                              |
+| :----------------------------- |:-----------------------------------------------------------------------------------------------| :-------------------------------------------------------|
+| simpletest_test_group_started  | A test group has started. This event is triggered just once at the beginning of a test group.  | N/A                                                     |
+| simpletest_test_group_finished | A test group has finished. This event is triggered just once at the end of a test group.       | N/A                                                     |
+| simpletest_test_finished       | An individual test has finished. This event is triggered when an individual test has finished. | The results of the test as gathered by e107WebTestCase. |
