@@ -1,0 +1,41 @@
+<?php
+
+/**
+ * @file
+ * Contains LibraryUnitTest.
+ */
+
+
+/**
+ * Tests basic Libraries API functions.
+ */
+class LibraryUnitTest extends e107UnitTestCase
+{
+
+	/**
+	 * Provides metadata about this test.
+	 *
+	 * @return array
+	 *   An array of test metadata with the following keys:
+	 *   - name: The name of the test.
+	 *   - description: The description of the test.
+	 *   - group: The group of the test.
+	 */
+	public static function getInfo()
+	{
+		return array(
+			'name'        => 'Library API unit tests',
+			'description' => 'Tests basic functions provided by Library API.',
+			'group'       => 'Library API',
+		);
+	}
+
+	/**
+	 * Tests e107::library('detect', '...').
+	 */
+	public function testLibraryGetPath()
+	{
+		$this->assertEqual(e107::library('detect', 'example'), false, "e107::library('detect', '...') returns false for a missing library.");
+	}
+
+}

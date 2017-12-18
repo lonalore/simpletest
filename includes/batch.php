@@ -54,6 +54,8 @@ function simpletest_run_tests_process($tests, $test_id, &$context)
 				$test_results[$key] += $value;
 			}
 
+			$context['results'][] = $test['class'];
+
 			// Update our progress information.
 			$context['sandbox']['progress']++;
 
@@ -63,9 +65,6 @@ function simpletest_run_tests_process($tests, $test_id, &$context)
 			$context['message'] .= '</div>';
 		}
 	}
-
-	// The test_id is the only thing we need to save for the report page.
-	$context['results']['test_id'] = $test_id;
 
 	// Inform the batch engine that we are not finished,
 	// and provide an estimation of the completion level we reached.
@@ -86,7 +85,7 @@ function simpletest_run_tests_finished($success, $results, $operations, $elapsed
 	if($success)
 	{
 		// Here we do something meaningful with the results.
-		$message = $tp->lanVars('[x] items successfully processed.', array(
+		$message = $tp->lanVars('[x] item(s) successfully processed.', array(
 			'x' => count($results),
 		));
 		$ms->add($message, E_MESSAGE_SUCCESS, true);

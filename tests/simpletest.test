@@ -2,14 +2,14 @@
 
 /**
  * @file
- * Contains LibrariesUnitTest.
+ * Contains SimpleTestFunctionalTest.
  */
 
 
 /**
- * Tests basic Libraries API functions.
+ * Class SimpleTestFunctionalTest.
  */
-class LibrariesUnitTest extends e107UnitTestCase
+class SimpleTestFunctionalTest extends e107WebTestCase
 {
 
 	/**
@@ -24,18 +24,40 @@ class LibrariesUnitTest extends e107UnitTestCase
 	public static function getInfo()
 	{
 		return array(
-			'name'        => 'Libraries API unit tests',
-			'description' => 'Tests basic functions provided by Libraries API.',
-			'group'       => 'Libraries API',
+			'name'        => 'Web runner',
+			'description' => 'Test SimpleTest\'s web interface: check that the intended tests were run and ensure that test reports display the intended results. Also test SimpleTest\'s internal browser and API\'s both explicitly and implicitly.',
+			'group'       => 'SimpleTest',
 		);
 	}
 
+	protected function setUp() {
+		if (!$this->inCURL()) {
+			parent::setUp(array('batch', 'simpletest'));
+
+			// Create and login user.
+			// $admin_user = $this->e107CreateUser();
+			// $this->e107Login($admin_user);
+		}
+		else {
+			parent::setUp();
+		}
+	}
+
 	/**
-	 * Tests e107::library('detect', '...').
+	 * Check if the test is being run from inside a CURL request.
 	 */
-	public function testLibrariesGetPath()
-	{
-		$this->assertEqual(e107::library('detect', 'example'), false, "e107::library('detect', '...') returns false for a missing library.");
+	function inCURL() {
+		return (bool) simpletest_valid_test_ua();
+	}
+
+	/**
+	 * Test the internal browsers functionality.
+	 */
+	protected function testInternalBrowser() {
+		if (!$this->inCURL()) {
+			$this->e107Get('/');
+			$this->assertTrue($this->e107GetHeader('Date'), 'An HTTP header was received.');
+		}
 	}
 
 }

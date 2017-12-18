@@ -103,7 +103,7 @@ function simpletest_verbose($message, $original_file_directory = null, $test_cla
 
 		if($writable && !file_exists($directory . '/.htaccess'))
 		{
-			file_put_contents($directory . '/.htaccess', "<IfModule mod_expires.c>\nExpiresActive Off\n</IfModule>\n");
+			file_put_contents($directory . '/.htaccess', "allow from all\n\n<IfModule mod_expires.c>\n\tExpiresActive Off\n</IfModule>\n");
 		}
 
 		return $writable;
@@ -435,7 +435,8 @@ function simpletest_check_plain($text)
  * @return array
  *   Array containing the last database prefix used and the last test class that ran.
  */
-function simpletest_last_test_get($test_id) {
+function simpletest_last_test_get($test_id)
+{
 	$last_prefix = e107::getDb()->retrieve('simpletest_test_id', 'last_prefix', ' test_id = ' . (int) $test_id . ' ORDER BY test_id DESC LIMIT 1');
 	$last_test_class = e107::getDb()->retrieve('simpletest', 'test_class', ' test_id = ' . (int) $test_id . ' ORDER BY message_id DESC LIMIT 1');
 	return array($last_prefix, $last_test_class);
@@ -777,7 +778,7 @@ function simpletest_get_tests()
 {
 	e107_require_once(e_PLUGIN . 'simpletest/simpletest.php');
 
-	$plugList = e107::getFile()->get_files(e_PLUGIN, "^([a-zA-Z0-9]+)\.(test)$", "standard", 2);
+	$plugList = e107::getFile()->get_files(e_PLUGIN, "^([a-zA-Z0-9_]+)\.(test)$", "standard", 3);
 
 	$tests = array();
 
@@ -915,4 +916,92 @@ function simpletest_result_get($test_id)
 	}
 
 	return $test_results;
+}
+
+/**
+ * Returns the test prefix if this is an internal request from SimpleTest.
+ *
+ * @return bool
+ *   Either the simpletest prefix (the string "simpletest" followed by any number of digits)
+ *   or FALSE if the user agent does not contain a valid HMAC and timestamp.
+ */
+function simpletest_valid_test_ua()
+{
+	// No reason to reset this.
+	static $test_prefix;
+
+	if(isset($test_prefix))
+	{
+		return $test_prefix;
+	}
+
+	if(isset($_SERVER['HTTP_USER_AGENT']) && preg_match("/^(simpletest\d+);(.+);(.+);(.+)$/", $_SERVER['HTTP_USER_AGENT'], $matches))
+	{
+		list(, $prefix, $time, $salt, $hmac) = $matches;
+		$check_string = $prefix . ';' . $time . ';' . $salt;
+		$key = simpletest_get_hash_salt() . filectime(__FILE__) . fileinode(__FILE__);
+		$time_diff = ((int) $_SERVER['REQUEST_TIME']) - $time;
+		// Since we are making a local request a 5 second time window is allowed,
+		// and the HMAC must match.
+		if($time_diff >= 0 && $time_diff <= 5 && $hmac == simpletest_hmac_base64($check_string, $key))
+		{
+			$test_prefix = $prefix;
+			return $test_prefix;
+		}
+	}
+
+	$test_prefix = false;
+	return $test_prefix;
+}
+
+/**
+ * Generates a user agent string with a HMAC and timestamp for simpletest.
+ */
+function simpletest_generate_test_ua($prefix)
+{
+	static $key;
+
+	if(!isset($key))
+	{
+		$hash = hash('sha256', serialize($prefix));
+		$key = $hash . filectime(__FILE__) . fileinode(__FILE__);
+	}
+	// Generate a moderately secure HMAC based on the database credentials.
+	$salt = uniqid('', true);
+	$check_string = $prefix . ';' . time() . ';' . $salt;
+	return $check_string . ';' . simpletest_hmac_base64($check_string, $key);
+}
+
+/**
+ * Gets a salt.
+ *
+ * @return string
+ *   A salt based on information in e107_config.php.
+ */
+function simpletest_get_hash_salt()
+{
+	global $mySQLprefix;
+	return hash('sha256', serialize($mySQLprefix));
+}
+
+/**
+ * Calculates a base-64 encoded, URL-safe sha-256 hmac.
+ *
+ * @param string $data
+ *   String to be validated with the hmac.
+ * @param string $key
+ *   A secret string key.
+ *
+ * @return string
+ *   A base-64 encoded sha-256 hmac, with + replaced with -, / with _ and any = padding characters removed.
+ */
+function simpletest_hmac_base64($data, $key)
+{
+	// Casting $data and $key to strings here is necessary to avoid empty string
+	// results of the hash function if they are not scalar values. As this
+	// function is used in security-critical contexts like token validation it is
+	// important that it never returns an empty string.
+	$hmac = base64_encode(hash_hmac('sha256', (string) $data, (string) $key, true));
+	// Modify the hmac so it's safe to use in URLs.
+	return strtr($hmac, array('+' => '-', '/' => '_', '=' => ''));
 }

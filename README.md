@@ -31,3 +31,44 @@ The database tables and files directory are not created for unit tests. This mak
 | simpletest_test_group_started  | A test group has started. This event is triggered just once at the beginning of a test group.  | N/A                                                     |
 | simpletest_test_group_finished | A test group has finished. This event is triggered just once at the end of a test group.       | N/A                                                     |
 | simpletest_test_finished       | An individual test has finished. This event is triggered when an individual test has finished. | The results of the test as gathered by e107WebTestCase. |
+
+### Setup
+
+Put this code to the end of your `e107_config.php` file.
+
+```php
+/**
+ * If running nginx, implement getallheaders our-self.
+ *
+ * Code is taken from http://php.net/manual/en/function.getallheaders.php
+ */
+if(!function_exists('getallheaders'))
+{
+	function getallheaders()
+	{
+		$headers = array();
+
+		foreach($_SERVER as $name => $value)
+		{
+			if(substr($name, 0, 5) == 'HTTP_')
+			{
+				$headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+			}
+		}
+
+		return $headers;
+	}
+}
+
+if(!empty($getHeaders = getallheaders()) && array_key_exists('SIMPLETEST_PREFIX', $getHeaders))
+{
+	// Use the test tables.
+	$mySQLprefix = $getHeaders['SIMPLETEST_PREFIX'] . '_';
+
+	// Save files into test folders.
+	$MEDIA_DIRECTORY .= 'simpletest/';
+	$SYSTEM_DIRECTORY .= 'simpletest/';
+
+	$E107_CONFIG['site_path'] = substr($getHeaders['SIMPLETEST_PREFIX'], 10);
+}
+```

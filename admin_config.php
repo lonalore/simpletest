@@ -230,8 +230,8 @@ class simpletest_admin_ui extends e_admin_ui
 			$table .= '<table class="table table-striped">';
 			$table .= '<thead>';
 			$table .= '<tr>';
-			$table .= '<th>Class</th>';
-			$table .= '<th>Name / Description</th>';
+			$table .= '<th width="40%">Class</th>';
+			$table .= '<th width="60%">Name / Description</th>';
 			$table .= '</tr>';
 			$table .= '</thead>';
 			$table .= '<tbody>';
@@ -302,7 +302,7 @@ class simpletest_admin_ui extends e_admin_ui
 			'file'             => '{e_PLUGIN}simpletest/includes/batch.php',
 		);
 
-		$finished = e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=results&id=' . $test_id;
+		$finished = e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=results&test=' . $test_id;
 		$process = e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=run';
 
 		e107::getEvent()->trigger('simpletest_test_group_started');
@@ -330,7 +330,7 @@ class simpletest_admin_ui extends e_admin_ui
 	{
 		$results = array();
 
-		if (isset($_GET['id']) && is_numeric($_GET['id']) && !$results = simpletest_result_get($_GET['id'])) {
+		if (isset($_GET['test']) && is_numeric($_GET['test']) && !$results = simpletest_result_get($_GET['test'])) {
 			e107::getMessage()->addWarning('No test results to display.', 'default', true);
 			e107::redirect(e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=list');
 		}
