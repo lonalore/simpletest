@@ -377,7 +377,7 @@ class simpletest_admin_ui extends e_admin_ui
 			'options' => array(
 				'id'          => !empty($options['id']) ? $options['id'] : md5($title),
 				'collapsible' => isset($options['collapsible']) ? $options['collapsible'] : true,
-				'collapsed'   => isset($options['collapsed']) ? $options['collapsed'] : true,
+				'collapsed'   => isset($options['collapsed']) ? $options['collapsed'] : false,
 			),
 		));
 

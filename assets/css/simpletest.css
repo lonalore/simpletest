@@ -1,3 +1,49 @@
+.simpletest-widget-panel {
+    border-radius: 0;
+    margin-bottom: 10px;
+}
+
+.simpletest-widget-panel .panel-heading {
+    border-bottom: none;
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+}
+
+.simpletest-widget-panel .panel-heading .panel-title {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.simpletest-widget-panel .panel-body {
+    padding: 0;
+}
+
+.simpletest-widget-panel .panel-body table {
+    margin-bottom: 0;
+}
+
+.simpletest-widget-panel .panel-body table thead tr {
+    border: none;
+    border-top: 1px solid #030303;
+}
+
+.simpletest-widget-panel .panel-body .table > thead > tr > th,
+.simpletest-widget-panel .panel-body table thead tr > th {
+    padding: 5px 10px;
+}
+
+.simpletest-widget-panel .panel-body table input[type="checkbox"] {
+    vertical-align: middle;
+    margin-top: 0;
+    margin-left: 8px;
+    cursor: pointer;
+}
+
+.simpletest-widget-panel .control-label {
+    cursor: pointer;
+    padding-top: 0;
+}
+
 .toggle-all-label {
     margin: 0 0 0 15px;
     padding: 0 0 10px 0 !important;
@@ -7,8 +53,11 @@
 
 .toggle-all-label input[type="checkbox"],
 .simpletest-widget-panel input[type="checkbox"] {
-    margin-left: 5px;
+    vertical-align: middle;
+    margin-top: 0;
+    margin-left: 0;
     margin-right: 5px;
+    cursor: pointer;
 }
 
 div.message > div.item-list {
