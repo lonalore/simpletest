@@ -44,7 +44,9 @@ function simpletest_run_tests_process($tests, $test_id, &$context)
 			$obj = new $test['class']($test_id);
 			$obj->run();
 
-			$info = $obj->getInfo();
+			// $info = $obj->getInfo();
+
+			e107::getEvent()->trigger('simpletest_test_finished', $obj->results);
 
 			$test_results[$test['class']] = $obj->results;
 			foreach($test_results[$test['class']] as $key => $value)
@@ -100,6 +102,8 @@ function simpletest_run_tests_finished($success, $results, $operations, $elapsed
 		));
 		$ms->add($message, E_MESSAGE_ERROR, true);
 	}
+
+	e107::getEvent()->trigger('simpletest_test_group_finished');
 }
 
 function _simpletest_format_summary_line($summary)

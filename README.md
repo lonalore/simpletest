@@ -23,3 +23,11 @@ SimpleTest creates a complete e107 installation and a virtual web browser and th
 SimpleTest also provides an **e107UnitTestCase** as an alternative to the **e107WebTestCase**.
 
 The database tables and files directory are not created for unit tests. This makes them much faster to initialize than functional tests but means that they cannot access the database or the files directory. Calling any e107 function that needs the database will throw exceptions.
+
+### Events provided by the SimpleTest plugin.
+
+| Event name          | Description                                                                                    | Event data                                              |
+| :------------------ |:-----------------------------------------------------------------------------------------------| :-------------------------------------------------------|
+| test_group_started  | A test group has started. This event is triggered just once at the beginning of a test group.  | N/A                                                     |
+| test_group_finished | A test group has finished. This event is triggered just once at the end of a test group.       | N/A                                                     |
+| test_finished       | An individual test has finished. This event is triggered when an individual test has finished. | The results of the test as gathered by e107WebTestCase. |

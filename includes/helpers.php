@@ -428,6 +428,20 @@ function simpletest_check_plain($text)
 }
 
 /**
+ * Get information about the last test that ran given a test ID.
+ *
+ * @param $test_id
+ *   The test ID to get the last test from.
+ * @return array
+ *   Array containing the last database prefix used and the last test class that ran.
+ */
+function simpletest_last_test_get($test_id) {
+	$last_prefix = e107::getDb()->retrieve('simpletest_test_id', 'last_prefix', ' test_id = ' . (int) $test_id . ' ORDER BY test_id DESC LIMIT 1');
+	$last_test_class = e107::getDb()->retrieve('simpletest', 'test_class', ' test_id = ' . (int) $test_id . ' ORDER BY message_id DESC LIMIT 1');
+	return array($last_prefix, $last_test_class);
+}
+
+/**
  * Read the error log and report any errors as assertion failures. The errors in the log should only be fatal errors
  * since any other errors will have been recorded by the error handler.
  *

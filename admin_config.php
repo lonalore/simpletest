@@ -12,7 +12,7 @@ if(!e107::isInstalled('simpletest') || !getperms("P"))
 	e107::redirect(e_BASE . 'index.php');
 }
 
-e107_require_once(e_PLUGIN . 'simpletest/includes/helpers.php');
+e107_require_once(e_PLUGIN . 'simpletest/simpletest.php');
 // Includes main Batch API file.
 e107_require_once(e_PLUGIN . 'batch/includes/batch.php');
 
@@ -304,6 +304,8 @@ class simpletest_admin_ui extends e_admin_ui
 
 		$finished = e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=results&id=' . $test_id;
 		$process = e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=run';
+
+		e107::getEvent()->trigger('simpletest_test_group_started');
 
 		batch_set($batch);
 		batch_process($finished, $process);
