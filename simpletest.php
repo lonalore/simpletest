@@ -1072,7 +1072,7 @@ class e107WebTestCase extends e107TestCase
 
 		foreach($plugins as $plugin)
 		{
-			// $install->installPlugin($plugin);
+			$install->installPlugin($plugin);
 		}
 	}
 
@@ -1117,7 +1117,7 @@ class e107WebTestCase extends e107TestCase
 
 		if(!empty($tables))
 		{
-			// $sql->gen("DROP TABLE " . implode(', ', $tables));
+			$sql->gen("DROP TABLE " . implode(', ', $tables));
 		}
 
 		// Restore the original connection prefix.

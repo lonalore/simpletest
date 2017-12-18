@@ -72,17 +72,21 @@ class SimpleTestInstall
 	}
 
 	/**
-	 * Install a Theme required plugin.
+	 * Install a plugin.
 	 *
-	 * @param string $plugpath - plugin folder name
-	 * @return void
+	 * @param string $plugin_path
+	 *   Plugin folder name.
 	 */
-	public function installPlugin($plugpath)
+	public function installPlugin($plugin_path)
 	{
-		$this->db->gen("SELECT * FROM #plugin WHERE plugin_path = '" . $plugpath . "' LIMIT 1");
+		$this->db->gen("SELECT * FROM #plugin WHERE plugin_path = '" . $plugin_path . "' LIMIT 1");
 		$row = $this->db->fetch();
-		e107::getPlugin()->install_plugin($row['plugin_id']);
-		e107::getMessage()->reset(false, false, true);
+
+		if(!empty($row['plugin_id']))
+		{
+			e107::getPlugin()->install($row['plugin_id']);
+			e107::getMessage()->reset(false, false, true);
+		}
 	}
 
 }
