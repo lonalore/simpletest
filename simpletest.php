@@ -1072,7 +1072,7 @@ class e107WebTestCase extends e107TestCase
 
 		foreach($plugins as $plugin)
 		{
-			$install->installPlugin($plugin);
+			// $install->installPlugin($plugin);
 		}
 	}
 
@@ -1107,7 +1107,7 @@ class e107WebTestCase extends e107TestCase
 
 		// Remove all prefixed tables.
 		$sql = e107::getDb();
-		$sql->gen("SELECT table_name FROM information_schema.tables WHERE table_schema='" . $mySQLdefaultdb . "' AND table_name LIKE '" . $this->databasePrefix . "%'");
+		$sql->gen("SELECT table_name FROM information_schema.tables WHERE table_schema='" . $mySQLdefaultdb . "' AND table_name LIKE 'simpletest%'");
 
 		$tables = array();
 		while($row = $sql->fetch())
@@ -1117,7 +1117,7 @@ class e107WebTestCase extends e107TestCase
 
 		if(!empty($tables))
 		{
-			$sql->gen("DROP TABLE " . implode(', ', $tables));
+			// $sql->gen("DROP TABLE " . implode(', ', $tables));
 		}
 
 		// Restore the original connection prefix.
