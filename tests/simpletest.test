@@ -25,7 +25,7 @@ class SimpleTestFunctionalTest extends e107WebTestCase
 	{
 		return array(
 			'name'        => 'Web runner',
-			'description' => 'Test SimpleTest\'s web interface: check that the intended tests were run and ensure that test reports display the intended results. Also test SimpleTest\'s internal browser and API\'s both explicitly and implicitly.',
+			'description' => 'Tests the SimpleTest\'s internal browser and API\'s.',
 			'group'       => 'SimpleTest',
 		);
 	}
