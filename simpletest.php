@@ -2048,6 +2048,750 @@ class e107WebTestCase extends e107TestCase
 		return $this->url;
 	}
 
+	/**
+	 * Pass if the internal browser's URL matches the given path.
+	 *
+	 * @param $url
+	 *   The expected URL.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to, defaults to 'Other'.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertUrl($url, $message = '', $group = 'Other')
+	{
+		if(!$message)
+		{
+			$message = e107::getParser()->lanVars('Current URL is [x].', array(
+				'x' => var_export($url, true),
+			));
+		}
+
+		$options['absolute'] = true;
+
+		return $this->assertEqual($this->getUrl(), $url, $message, $group);
+	}
+
+	/**
+	 * Pass if the raw text IS found on the loaded page, fail otherwise.
+	 * Raw text refers to the raw HTML that the page generated.
+	 *
+	 * @param $raw
+	 *   Raw (HTML) string to look for.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to, defaults to 'Other'.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertRaw($raw, $message = '', $group = 'Other')
+	{
+		if(!$message)
+		{
+			$message = e107::getParser()->lanVars('Raw "[x]" found', array('x' => $raw));
+		}
+
+		return $this->assert(strpos($this->e107GetContent(), $raw) !== false, $message, $group);
+	}
+
+	/**
+	 * Pass if the raw text is NOT found on the loaded page, fail otherwise.
+	 * Raw text refers to the raw HTML that the page generated.
+	 *
+	 * @param $raw
+	 *   Raw (HTML) string to look for.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to, defaults to 'Other'.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertNoRaw($raw, $message = '', $group = 'Other')
+	{
+		if(!$message)
+		{
+			$message = e107::getParser()->lanVars('Raw "[x]" not found', array('x' => $raw));
+		}
+
+		return $this->assert(strpos($this->e107GetContent(), $raw) === false, $message, $group);
+	}
+
+	/**
+	 * Pass if the text IS found on the text version of the page. The text version is the equivalent of what a user
+	 * would see when viewing through a web browser. In other words the HTML has been filtered out of the contents.
+	 *
+	 * @param $text
+	 *   Plain text to look for.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to, defaults to 'Other'.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertText($text, $message = '', $group = 'Other')
+	{
+		return $this->assertTextHelper($text, $message, $group, false);
+	}
+
+	/**
+	 * Pass if the text is NOT found on the text version of the page. The text version is the equivalent of what a
+	 * user would see when viewing through a web browser. In other words the HTML has been filtered out of the contents.
+	 *
+	 * @param $text
+	 *   Plain text to look for.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to, defaults to 'Other'.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertNoText($text, $message = '', $group = 'Other')
+	{
+		return $this->assertTextHelper($text, $message, $group, true);
+	}
+
+	/**
+	 * Helper for assertText and assertNoText. It is not recommended to call this function directly.
+	 *
+	 * @param $text
+	 *   Plain text to look for.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to.
+	 * @param $not_exists
+	 *   TRUE if this text should not exist, FALSE if it should.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertTextHelper($text, $message = '', $group, $not_exists)
+	{
+		if($this->plainTextContent === false)
+		{
+			// TODO filter XSS.
+			$this->plainTextContent = $this->e107GetContent();
+		}
+
+		if(!$message)
+		{
+			$message = !$not_exists ? e107::getParser()->lanVars('"[x]" found', array('x' => $text)) : e107::getParser()->lanVars('"[x]" not found', array('x' => $text));
+		}
+
+		return $this->assert($not_exists == (strpos($this->plainTextContent, $text) === false), $message, $group);
+	}
+
+	/**
+	 * Pass if the text is found ONLY ONCE on the text version of the page. The text version is the equivalent of
+	 * what a user would see when viewing through a web browser. In other words the HTML has been filtered out of
+	 * the contents.
+	 *
+	 * @param $text
+	 *   Plain text to look for.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to, defaults to 'Other'.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertUniqueText($text, $message = '', $group = 'Other')
+	{
+		return $this->assertUniqueTextHelper($text, $message, $group, true);
+	}
+
+	/**
+	 * Pass if the text is found MORE THAN ONCE on the text version of the page. The text version is the equivalent
+	 * of what a user would see when viewing through a web browser. In other words the HTML has been filtered out
+	 * of the contents.
+	 *
+	 * @param $text
+	 *   Plain text to look for.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to, defaults to 'Other'.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertNoUniqueText($text, $message = '', $group = 'Other')
+	{
+		return $this->assertUniqueTextHelper($text, $message, $group, false);
+	}
+
+	/**
+	 * Helper for assertUniqueText and assertNoUniqueText. It is not recommended to call this function directly.
+	 *
+	 * @param $text
+	 *   Plain text to look for.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to.
+	 * @param $be_unique
+	 *   TRUE if this text should be found only once, FALSE if it should be found more than once.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertUniqueTextHelper($text, $message = '', $group, $be_unique)
+	{
+		if($this->plainTextContent === false)
+		{
+			// TODO filter XSS.
+			$this->plainTextContent = $this->e107GetContent();
+		}
+
+		if(!$message)
+		{
+			$message = '"' . $text . '"' . ($be_unique ? ' found only once' : ' found more than once');
+		}
+
+		$first_occurance = strpos($this->plainTextContent, $text);
+
+		if($first_occurance === false)
+		{
+			return $this->assert(false, $message, $group);
+		}
+
+		$offset = $first_occurance + strlen($text);
+		$second_occurance = strpos($this->plainTextContent, $text, $offset);
+
+		return $this->assert($be_unique == ($second_occurance === false), $message, $group);
+	}
+
+	/**
+	 * Will trigger a pass if the Perl regex pattern is found in the raw content.
+	 *
+	 * @param $pattern
+	 *   Perl regex to look for including the regex delimiters.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertPattern($pattern, $message = '', $group = 'Other')
+	{
+		if(!$message)
+		{
+			$message = e107::getParser()->lanVars('Pattern "[x]" found', array('x' => $pattern));
+		}
+
+		return $this->assert((bool) preg_match($pattern, $this->e107GetContent()), $message, $group);
+	}
+
+	/**
+	 * Will trigger a pass if the perl regex pattern is not present in raw content.
+	 *
+	 * @param $pattern
+	 *   Perl regex to look for including the regex delimiters.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertNoPattern($pattern, $message = '', $group = 'Other')
+	{
+		if(!$message)
+		{
+			$message = e107::getParser()->lanVars('Pattern "[x]" not found', array('x' => $pattern));
+		}
+
+		return $this->assert(!preg_match($pattern, $this->e107GetContent()), $message, $group);
+	}
+
+	/**
+	 * Pass if the page title is the given string.
+	 *
+	 * @param $title
+	 *   The string the title should be.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertTitle($title, $message = '', $group = 'Other')
+	{
+		$actual = (string) current($this->xpath('//title'));
+
+		if(!$message)
+		{
+			$message = e107::getParser()->lanVars('Page title [x] is equal to [y].', array(
+				'x' => var_export($actual, true),
+				'y' => var_export($title, true),
+			));
+		}
+
+		return $this->assertEqual($actual, $title, $message, $group);
+	}
+
+	/**
+	 * Pass if the page title is not the given string.
+	 *
+	 * @param $title
+	 *   The string the title should not be.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertNoTitle($title, $message = '', $group = 'Other')
+	{
+		$actual = (string) current($this->xpath('//title'));
+
+		if(!$message)
+		{
+			$message = e107::getParser()->lanVars('Page title [x] is not equal to [y].', array(
+				'x' => var_export($actual, true),
+				'y' => var_export($title, true),
+			));
+		}
+
+		return $this->assertNotEqual($actual, $title, $message, $group);
+	}
+
+	/**
+	 * Asserts that a field exists in the current page by the given XPath.
+	 *
+	 * @param $xpath
+	 *   XPath used to find the field.
+	 * @param $value
+	 *   (optional) Value of the field to assert.
+	 * @param $message
+	 *   (optional) Message to display.
+	 * @param $group
+	 *   (optional) The group this message belongs to.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertFieldByXPath($xpath, $value = null, $message = '', $group = 'Other')
+	{
+		$fields = $this->xpath($xpath);
+
+		// If value specified then check array for match.
+		$found = true;
+		if(isset($value))
+		{
+			$found = false;
+			if($fields)
+			{
+				foreach($fields as $field)
+				{
+					if(isset($field['value']) && $field['value'] == $value)
+					{
+						// Input element with correct value.
+						$found = true;
+					}
+					elseif(isset($field->option))
+					{
+						// Select element found.
+						if($this->getSelectedItem($field) == $value)
+						{
+							$found = true;
+						}
+						else
+						{
+							// No item selected so use first item.
+							$items = $this->getAllOptions($field);
+							if(!empty($items) && $items[0]['value'] == $value)
+							{
+								$found = true;
+							}
+						}
+					}
+					elseif((string) $field == $value)
+					{
+						// Text area with correct text.
+						$found = true;
+					}
+				}
+			}
+		}
+		return $this->assertTrue($fields && $found, $message, $group);
+	}
+
+	/**
+	 * Get the selected value from a select field.
+	 *
+	 * @param $element
+	 *   SimpleXMLElement select element.
+	 *
+	 * @return mixed
+	 *   The selected value or FALSE.
+	 */
+	protected function getSelectedItem(SimpleXMLElement $element)
+	{
+		foreach($element->children() as $item)
+		{
+			if(isset($item['selected']))
+			{
+				return $item['value'];
+			}
+			elseif($item->getName() == 'optgroup')
+			{
+				if($value = $this->getSelectedItem($item))
+				{
+					return $value;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Asserts that a field does not exist in the current page by the given XPath.
+	 *
+	 * @param $xpath
+	 *   XPath used to find the field.
+	 * @param $value
+	 *   (optional) Value of the field to assert.
+	 * @param $message
+	 *   (optional) Message to display.
+	 * @param $group
+	 *   (optional) The group this message belongs to.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertNoFieldByXPath($xpath, $value = null, $message = '', $group = 'Other')
+	{
+		$fields = $this->xpath($xpath);
+
+		// If value specified then check array for match.
+		$found = true;
+		if(isset($value))
+		{
+			$found = false;
+			if($fields)
+			{
+				foreach($fields as $field)
+				{
+					if($field['value'] == $value)
+					{
+						$found = true;
+					}
+				}
+			}
+		}
+		return $this->assertFalse($fields && $found, $message, $group);
+	}
+
+	/**
+	 * Asserts that a field exists in the current page with the given name and value.
+	 *
+	 * @param $name
+	 *   Name of field to assert.
+	 * @param $value
+	 *   Value of the field to assert.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertFieldByName($name, $value = '', $message = '', $group = 'Browser')
+	{
+		return $this->assertFieldByXPath($this->constructFieldXpath('name', $name), $value, $message ? $message : e107::getParser()->lanVars('Found field by name [x]', array('x' => $name)), $group);
+	}
+
+	/**
+	 * Asserts that a field does not exist with the given name and value.
+	 *
+	 * @param $name
+	 *   Name of field to assert.
+	 * @param $value
+	 *   Value of the field to assert.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertNoFieldByName($name, $value = '', $message = '', $group = 'Browser')
+	{
+		return $this->assertNoFieldByXPath($this->constructFieldXpath('name', $name), $value, $message ? $message : e107::getParser()->lanVars('Did not find field by name [x]', array('x' => $name)), $group);
+	}
+
+	/**
+	 * Asserts that a field exists in the current page with the given id and value.
+	 *
+	 * @param $id
+	 *   Id of field to assert.
+	 * @param $value
+	 *   Value of the field to assert.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertFieldById($id, $value = '', $message = '', $group = 'Browser')
+	{
+		return $this->assertFieldByXPath($this->constructFieldXpath('id', $id), $value, $message ? $message : e107::getParser()->lanVars('Found field by id [x]', array('x' => $id)), $group);
+	}
+
+	/**
+	 * Asserts that a field does not exist with the given id and value.
+	 *
+	 * @param $id
+	 *   Id of field to assert.
+	 * @param $value
+	 *   Value of the field to assert.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertNoFieldById($id, $value = '', $message = '', $group = 'Browser')
+	{
+		return $this->assertNoFieldByXPath($this->constructFieldXpath('id', $id), $value, $message ? $message : e107::getParser()->lanVars('Did not find field by id [x]', array('x' => $id)), $group);
+	}
+
+	/**
+	 * Asserts that a checkbox field in the current page is checked.
+	 *
+	 * @param $id
+	 *   Id of field to assert.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertFieldChecked($id, $message = '', $group = 'Browser')
+	{
+		$elements = $this->xpath('//input[@id=:id]', array(':id' => $id));
+		return $this->assertTrue(isset($elements[0]) && !empty($elements[0]['checked']), $message ? $message : e107::getParser()->lanVars('Checkbox field [x] is checked.', array('x' => $id)), $group);
+	}
+
+	/**
+	 * Asserts that a checkbox field in the current page is not checked.
+	 *
+	 * @param $id
+	 *   Id of field to assert.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertNoFieldChecked($id, $message = '', $group = 'Browser')
+	{
+		$elements = $this->xpath('//input[@id=:id]', array(':id' => $id));
+		return $this->assertTrue(isset($elements[0]) && empty($elements[0]['checked']), $message ? $message : e107::getParser()->lanVars('Checkbox field [x] is not checked.', array('x' => $id)), $group);
+	}
+
+	/**
+	 * Asserts that a select option in the current page is checked.
+	 *
+	 * @param $id
+	 *   Id of select field to assert.
+	 * @param $option
+	 *   Option to assert.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertOptionSelected($id, $option, $message = '', $group = 'Browser')
+	{
+		$elements = $this->xpath('//select[@id=:id]//option[@value=:option]', array(':id' => $id, ':option' => $option));
+		return $this->assertTrue(isset($elements[0]) && !empty($elements[0]['selected']), $message ? $message : e107::getParser()->lanVars('Option [x] for field [y] is selected.', array('x' => $option, 'y' => $id)), $group);
+	}
+
+	/**
+	 * Asserts that a select option in the current page is not checked.
+	 *
+	 * @param $id
+	 *   Id of select field to assert.
+	 * @param $option
+	 *   Option to assert.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertNoOptionSelected($id, $option, $message = '', $group = 'Browser')
+	{
+		$elements = $this->xpath('//select[@id=:id]//option[@value=:option]', array(':id' => $id, ':option' => $option));
+		return $this->assertTrue(isset($elements[0]) && empty($elements[0]['selected']), $message ? $message : e107::getParser()->lanVars('Option [x] for field [y] is not selected.', array('x' => $option, 'y' => $id)), $group);
+	}
+
+	/**
+	 * Asserts that a field exists with the given name or id.
+	 *
+	 * @param $field
+	 *   Name or id of field to assert.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertField($field, $message = '', $group = 'Other')
+	{
+		return $this->assertFieldByXPath($this->constructFieldXpath('name', $field) . '|' . $this->constructFieldXpath('id', $field), null, $message, $group);
+	}
+
+	/**
+	 * Asserts that a field does not exist with the given name or id.
+	 *
+	 * @param $field
+	 *   Name or id of field to assert.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertNoField($field, $message = '', $group = 'Other')
+	{
+		return $this->assertNoFieldByXPath($this->constructFieldXpath('name', $field) . '|' . $this->constructFieldXpath('id', $field), null, $message, $group);
+	}
+
+	/**
+	 * Asserts that each HTML ID is used for just a single element.
+	 *
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to.
+	 * @param $ids_to_skip
+	 *   An optional array of ids to skip when checking for duplicates. It is
+	 *   always a bug to have duplicate HTML IDs, so this parameter is to enable
+	 *   incremental fixing of code.
+	 *
+	 * @return boolean
+	 *   TRUE on pass, FALSE on fail.
+	 */
+	protected function assertNoDuplicateIds($message = '', $group = 'Other', $ids_to_skip = array())
+	{
+		$status = true;
+
+		foreach($this->xpath('//*[@id]') as $element)
+		{
+			$id = (string) $element['id'];
+
+			if(isset($seen_ids[$id]) && !in_array($id, $ids_to_skip))
+			{
+				$this->fail(e107::getParser()->lanVars('The HTML ID [x] is unique.', array('x' => $id)), $group);
+				$status = false;
+			}
+
+			$seen_ids[$id] = true;
+		}
+
+		return $this->assert($status, $message, $group);
+	}
+
+	/**
+	 * Helper function: construct an XPath for the given set of attributes and value.
+	 *
+	 * @param $attribute
+	 *   Field attributes.
+	 * @param $value
+	 *   Value of field.
+	 *
+	 * @return mixed
+	 *   XPath for specified values.
+	 */
+	protected function constructFieldXpath($attribute, $value)
+	{
+		$xpath = '//textarea[@' . $attribute . '=:value]|//input[@' . $attribute . '=:value]|//select[@' . $attribute . '=:value]';
+		return $this->buildXPathQuery($xpath, array(':value' => $value));
+	}
+
+	/**
+	 * Asserts the page responds with the specified response code.
+	 *
+	 * @param $code
+	 *   Response code. For example 200 is a successful page request. For a list of all codes see
+	 *   http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to.
+	 *
+	 * @return boolean
+	 *   Assertion result.
+	 */
+	protected function assertResponse($code, $message = '', $group = 'Browser')
+	{
+		$curl_code = curl_getinfo($this->curlHandle, CURLINFO_HTTP_CODE);
+		$match = is_array($code) ? in_array($curl_code, $code) : $curl_code == $code;
+		return $this->assertTrue($match, $message ? $message : e107::getParser()->lanVars('HTTP response expected [x], actual [y]', array('x' => $code, 'y' => $curl_code)), $group);
+	}
+
+	/**
+	 * Asserts the page did not return the specified response code.
+	 *
+	 * @param $code
+	 *   Response code. For example 200 is a successful page request. For a list of all codes see
+	 *   http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to.
+	 *
+	 * @return boolean
+	 *   Assertion result.
+	 */
+	protected function assertNoResponse($code, $message = '', $group = 'Browser')
+	{
+		$curl_code = curl_getinfo($this->curlHandle, CURLINFO_HTTP_CODE);
+		$match = is_array($code) ? in_array($curl_code, $code) : $curl_code == $code;
+		return $this->assertFalse($match, $message ? $message : e107::getParser()->lanVars('HTTP response not expected [x], actual [y]', array('x' => $code, 'y' => $curl_code)), $group);
+	}
+
 }
 
 
