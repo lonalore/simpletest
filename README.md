@@ -34,7 +34,7 @@ The database tables and files directory are not created for unit tests. This mak
 
 ### Setup
 
-Put this code to the end of your `e107_config.php` file.
+Copy the following code at the end of your `e107_config.php` file.
 
 ```php
 if(!empty($_SERVER['HTTP_USER_AGENT']) && strpos($_SERVER['HTTP_USER_AGENT'], 'simpletest') === 0)
