@@ -64,10 +64,23 @@ div.message > div.item-list {
     font-weight: normal;
 }
 
+.simpletest-widget-panel .glyphicon-ok,
 .simpletest-pass {
     color: #33a333;
 }
 
+.simpletest-widget-panel .glyphicon-remove,
 .simpletest-fail {
     color: #981010;
+}
+
+.simpletest-widget-panel .glyphicon-ok,
+.simpletest-widget-panel .glyphicon-remove {
+    margin-right: 5px;
+}
+
+.simpletest-widget-panel .simpletest-result-table a {
+    color: #ffffff;
+    font-weight: bold;
+    cursor: pointer;
 }

@@ -40,6 +40,18 @@ class simpletest_shortcodes extends e_shortcode
 			$html .= '<a data-toggle="collapse" href="#' . $this->var['options']['id'] . '">';
 		}
 
+		if(is_bool($this->var['options']['success']))
+		{
+			if($this->var['options']['success'] === true)
+			{
+				$html .= e107::getParser()->toGlyph('glyphicon-ok') . ' ';
+			}
+			else
+			{
+				$html .= e107::getParser()->toGlyph('glyphicon-remove') . ' ';
+			}
+		}
+
 		$html .= $this->var['title'];
 
 		if((bool) $this->var['options']['collapsible'] === true)
@@ -53,6 +65,28 @@ class simpletest_shortcodes extends e_shortcode
 		}
 
 		return $html;
+	}
+
+	/**
+	 * @return string
+	 */
+	function sc_panel_class()
+	{
+		$class = 'panel panel-default simpletest-widget-panel';
+
+		if(is_bool($this->var['options']['success']))
+		{
+			if($this->var['options']['success'] === true)
+			{
+				// $class .= ' panel-success';
+			}
+			else
+			{
+				// $class .= ' panel-danger';
+			}
+		}
+
+		return $class;
 	}
 
 	/**
@@ -74,13 +108,15 @@ class simpletest_shortcodes extends e_shortcode
 	/**
 	 * @return string
 	 */
-	function sc_panel_class()
+	function sc_panel_body_class()
 	{
 		$class = 'panel-collapse collapse';
+
 		if((bool) $this->var['options']['collapsible'] === false || (bool) $this->var['options']['collapsed'] === false)
 		{
 			$class .= ' in';
 		}
+
 		return $class;
 	}
 
@@ -89,7 +125,12 @@ class simpletest_shortcodes extends e_shortcode
 	 */
 	function sc_panel_help()
 	{
-		return $this->var['help'];
+		if(empty($this->var['help']))
+		{
+			return '';
+		}
+
+		return '<span class="help-block">' . $this->var['help'] . '</span>';
 	}
 
 }

@@ -12,6 +12,7 @@ if(!e107::isInstalled('simpletest') || !getperms("P"))
 	e107::redirect(e_BASE . 'index.php');
 }
 
+// Includes main SimpleTest file.
 e107_require_once(e_PLUGIN . 'simpletest/simpletest.php');
 // Includes main Batch API file.
 e107_require_once(e_PLUGIN . 'batch/includes/batch.php');
@@ -202,7 +203,7 @@ class simpletest_admin_ui extends e_admin_ui
 	 */
 	public function init()
 	{
-
+		parent::init();
 	}
 
 	/**
@@ -257,7 +258,11 @@ class simpletest_admin_ui extends e_admin_ui
 			$table .= '</tbody>';
 			$table .= '</table>';
 
-			$html .= $this->getPanel($group, '', $table);
+			$html .= $this->getPanel($group, '', $table, '', array(
+				'checkbox'    => true,
+				'collapsible' => true,
+				'collapsed'   => true,
+			));
 		}
 
 		$html .= $form->submit('run', 'Run tests');
@@ -358,11 +363,65 @@ class simpletest_admin_ui extends e_admin_ui
 
 		$html = '';
 
-		print_a($results);
+		foreach($results as $test_class => $items)
+		{
+			$table = '';
 
-		// $html .= $this->getPanel('', '', '');
+			$success = true;
 
-		return e107::getRender()->tablerender('Results', $html, 'default', true);
+			$table .= '<table class="table table-striped simpletest-result-table">';
+			$table .= '<thead>';
+			$table .= '<tr>';
+			$table .= '<th width="30%">Message</th>';
+			$table .= '<th width="25%">Function</th>';
+			$table .= '<th width="30%">Filename</th>';
+			$table .= '<th width="5%">Line</th>';
+			$table .= '<th width="10%">Group</th>';
+			$table .= '</tr>';
+			$table .= '</thead>';
+			$table .= '<tbody>';
+			foreach($items as $item)
+			{
+				$class = '';
+
+				switch($item['status'])
+				{
+					case 'pass':
+						$class = 'success';
+						break;
+
+					case 'fail':
+						$class = 'danger';
+						$success = false;
+						break;
+
+					case 'debug':
+						$class = 'info';
+						break;
+				}
+
+				$table .= '<tr class="' . $class . '">';
+				$table .= '<td>' . $item['message'] . '</td>';
+				$table .= '<td>' . $item['function'] . '</td>';
+				$table .= '<td>' . str_replace(e_DOCROOT, '', $item['file']) . '</td>';
+				$table .= '<td>' . $item['line'] . '</td>';
+				$table .= '<td>' . $item['message_group'] . '</td>';
+				$table .= '</tr>';
+			}
+			$table .= '</tbody>';
+			$table .= '</table>';
+
+			$html .= $this->getPanel($test_class, '', $table, '', array(
+				'checkbox'    => false,
+				'collapsible' => true,
+				'collapsed'   => $success,
+				'success'     => $success,
+			));
+		}
+
+		simpletest_clean_results_table($test_id);
+
+		return e107::getRender()->tablerender(null, $html, 'default', true);
 	}
 
 	/**
@@ -372,7 +431,7 @@ class simpletest_admin_ui extends e_admin_ui
 	{
 		$frm = e107::getForm();
 
-		if (!empty($_POST['clean']))
+		if(!empty($_POST['clean']))
 		{
 			simpletest_clean_environment();
 		}
@@ -426,6 +485,7 @@ class simpletest_admin_ui extends e_admin_ui
 				'collapsible' => isset($options['collapsible']) ? $options['collapsible'] : true,
 				'collapsed'   => isset($options['collapsed']) ? $options['collapsed'] : false,
 				'checkbox'    => isset($options['checkbox']) ? $options['checkbox'] : true,
+				'success'     => isset($options['success']) ? $options['success'] : null,
 			),
 		));
 

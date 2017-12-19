@@ -82,12 +82,24 @@ function simpletest_run_tests_finished($success, $results, $operations, $elapsed
 	$tp = e107::getParser();
 	$ms = e107::getMessage();
 
+	// Here we do something meaningful with the results.
 	if($success)
 	{
-		// Here we do something meaningful with the results.
-		$message = $tp->lanVars('[x] item(s) successfully processed.', array(
-			'x' => count($results),
-		));
+		$count = count($results);
+
+		if($count > 1)
+		{
+			$message = $tp->lanVars('[x] tests successfully processed.', array(
+				'x' => $count,
+			));
+		}
+		else
+		{
+			$message = $tp->lanVars('[x] test successfully processed.', array(
+				'x' => $count,
+			));
+		}
+
 		$ms->add($message, E_MESSAGE_SUCCESS, true);
 	}
 	else

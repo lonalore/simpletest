@@ -492,11 +492,12 @@ abstract class e107TestCase
 	 */
 	protected function verbose($message)
 	{
+		global $SYSTEM_DIRECTORY;
+
 		if($id = simpletest_verbose($message))
 		{
 			// FIXME - create a web-accessible URL...
-			$original_file_directory = rtrim($this->originalSystemDirectory, '/');
-			$url = $original_file_directory . '/simpletest/verbose/' . get_class($this) . '-' . $id . '.html';
+			$url = SITEURLBASE . '/' . $SYSTEM_DIRECTORY . 'simpletest/verbose/' . get_class($this) . '-' . $id . '.html';
 
 			// FIXME - LANs...
 			$link = '<a href="' . $url . '" target="_blank">' . 'Verbose message' . '</a>';
