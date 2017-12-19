@@ -1,18 +1,46 @@
 <?php
 
+/**
+ * @file
+ * Contains helper class to make new e107 installation.
+ */
+
 
 /**
  * Helper class.
  */
-class SimpleTestInstall
+class SimpleTestE107
 {
 
+	/**
+	 * Database prefix.
+	 *
+	 * @var string
+	 */
 	protected $prefix;
 
+	/**
+	 * Site [hash] to be used for system and media folders.
+	 *
+	 * @var string
+	 */
 	protected $site_hash;
 
+	/**
+	 * Database connection.
+	 *
+	 * @var e_db_mysql
+	 */
 	protected $db;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param string $prefix
+	 *   Database prefix.
+	 * @param string $site_hash
+	 *   Site [hash] to be used for system and media folders.
+	 */
 	public function __construct($prefix, $site_hash)
 	{
 		global $mySQLdefaultdb;
@@ -30,7 +58,7 @@ class SimpleTestInstall
 	/**
 	 * Create Core MySQL tables.
 	 */
-	public function createTablesWithPrefix()
+	public function createTables()
 	{
 		if(empty($this->prefix))
 		{
@@ -65,7 +93,7 @@ class SimpleTestInstall
 	/**
 	 * Import and generate preferences and default content.
 	 */
-	public function importConfiguration()
+	public function importConfig()
 	{
 		$coreConfig = e_CORE . "xml/default_install.xml";
 		e107::getXml()->e107Import($coreConfig, 'add', true, false, $this->db);

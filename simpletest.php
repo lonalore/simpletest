@@ -7,17 +7,6 @@
 
 e107_require_once(e_PLUGIN . 'simpletest/includes/helpers.php');
 
-/**
- * Global variable that holds information about the tests being run.
- *
- * An array, with the following keys:
- *  - 'test_run_id': the ID of the test being run
- *  - 'in_child_site': TRUE if the current request is a cURL request from the parent site.
- *
- * @var array
- */
-global $e107_test_info;
-
 
 /**
  * Base class for e107 tests.
@@ -777,6 +766,9 @@ class e107UnitTestCase extends e107TestCase
 	 */
 	protected $originalMySQLPrefix;
 
+	/**
+	 * @var
+	 */
 	protected $originalSiteHash;
 
 	/**
@@ -943,6 +935,9 @@ class e107WebTestCase extends e107TestCase
 	 */
 	protected $headers;
 
+	/**
+	 * @var
+	 */
 	protected $cookies;
 
 	/**
@@ -985,8 +980,14 @@ class e107WebTestCase extends e107TestCase
 	 */
 	protected $elements = null;
 
+	/**
+	 * @var
+	 */
 	protected $originalSiteHash;
 
+	/**
+	 * @var bool
+	 */
 	protected $removeTables;
 
 	/**
@@ -1051,7 +1052,7 @@ class e107WebTestCase extends e107TestCase
 		simpletest_file_prepare_directory($media_files_directory, 1);
 		simpletest_file_prepare_directory($system_files_directory, 1);
 
-		// Log fatal errors.
+		// TODO Log fatal errors.
 		// ini_set('log_errors', 1);
 		// ini_set('error_log', $system_files_directory . '/error.log');
 
@@ -1070,13 +1071,13 @@ class e107WebTestCase extends e107TestCase
 	 */
 	protected function setUpInstall(array $plugins, $site_hash)
 	{
-		e107_require_once(e_PLUGIN . 'simpletest/includes/install.php');
+		e107_require_once(e_PLUGIN . 'simpletest/includes/e107.php');
 
 		$prefix = $this->databasePrefix . '_';
 
-		$install = new SimpleTestInstall($prefix, $site_hash);
-		$install->createTablesWithPrefix();
-		$install->importConfiguration();
+		$install = new SimpleTestE107($prefix, $site_hash);
+		$install->createTables();
+		$install->importConfig();
 
 		foreach($plugins as $plugin)
 		{

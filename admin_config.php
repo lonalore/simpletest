@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Class installations to handle configuration forms on Admin UI.
+ * Contains Admin UI for "SimpleTest" plugin.
  */
 
 require_once('../../class2.php');
