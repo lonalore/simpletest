@@ -496,7 +496,6 @@ abstract class e107TestCase
 
 		if($id = simpletest_verbose($message))
 		{
-			// FIXME - create a web-accessible URL...
 			$url = SITEURLBASE . '/' . $SYSTEM_DIRECTORY . 'simpletest/verbose/' . get_class($this) . '-' . $id . '.html';
 
 			// FIXME - LANs...
@@ -587,7 +586,7 @@ abstract class e107TestCase
 		}
 
 		// Clear out the error messages and restore error handler.
-		e107::getMessage()->reset();
+		e107::getMessage()->reset(false, false, true);
 		restore_error_handler();
 	}
 
