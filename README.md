@@ -1,9 +1,7 @@
 SimpleTest
 ==========
 
-e107 (v2) plugin - Provides a framework for unit and functional testing.
-
-> This plugin is under active development! Please do not use it!
+e107 (v2) plugin - Provides a framework for unit and functional testing. This plugin is modeled after the [SimpleTest PHP library](http://simpletest.sourceforge.net/)
 
 ## SimpleTest Testing tutorial
 
