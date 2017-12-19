@@ -75,6 +75,13 @@ class simpletest_admin extends e_admin_dispatcher
 			'caption' => LAN_PLUGIN_ST_ADMIN_22,
 			'perm'    => 'P',
 		),
+		'main/clean' => array(
+			'caption' => LAN_PLUGIN_ST_ADMIN_24,
+			'perm'    => 'P',
+		),
+		'other'      => array(
+			'divider' => true,
+		),
 		'main/prefs' => array(
 			'caption' => LAN_PLUGIN_ST_ADMIN_01,
 			'perm'    => 'P',
@@ -256,7 +263,7 @@ class simpletest_admin_ui extends e_admin_ui
 		$html .= $form->submit('run', 'Run tests');
 		$html .= $form->close();
 
-		$ns->tablerender(null, $html);
+		return $ns->tablerender(null, $html, 'default', true);
 	}
 
 	/**
@@ -323,16 +330,25 @@ class simpletest_admin_ui extends e_admin_ui
 
 		if($output !== false)
 		{
-			e107::getRender()->tablerender($output['caption'], $output['content']);
+			return e107::getRender()->tablerender($output['caption'], $output['content'], 'default', true);
+		}
+		else
+		{
+			e107::getMessage()->addError('Cannot render the batch processing page!', 'default', true);
+			e107::redirect(e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=list');
 		}
 	}
 
+	/**
+	 * Page callback to display test results.
+	 */
 	public function resultsPage()
 	{
 		$test_id = !empty($_GET['test']) ? (int) $_GET['test'] : 0;
 		$results = simpletest_result_get($test_id);
 
-		if (empty($results)) {
+		if(empty($results))
+		{
 			e107::getMessage()->addWarning('No test results to display.', 'default', true);
 			e107::redirect(e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=list');
 		}
@@ -346,7 +362,36 @@ class simpletest_admin_ui extends e_admin_ui
 
 		// $html .= $this->getPanel('', '', '');
 
-		e107::getRender()->tablerender('Results', $html);
+		return e107::getRender()->tablerender('Results', $html, 'default', true);
+	}
+
+	/**
+	 * Page callback to display/handle 'Clean environment' form.
+	 */
+	public function cleanPage()
+	{
+		$frm = e107::getForm();
+
+		if (!empty($_POST['clean']))
+		{
+			simpletest_clean_environment();
+		}
+
+		$html = '';
+		$form = '';
+
+		$form .= $frm->open('simpletest_clean', 'post');
+		$form .= $frm->hidden('clean', 1);
+		$form .= $frm->button('submit', LAN_PLUGIN_ST_ADMIN_25);
+		$form .= $frm->close();
+
+		$html .= $this->getPanel(LAN_PLUGIN_ST_ADMIN_25, LAN_PLUGIN_ST_ADMIN_26, $form, '', array(
+			'checkbox'    => false,
+			'collapsible' => false,
+			'collapsed'   => false,
+		));
+
+		return e107::getRender()->tablerender(null, $html, 'default', true);
 	}
 
 	/**
@@ -380,6 +425,7 @@ class simpletest_admin_ui extends e_admin_ui
 				'id'          => !empty($options['id']) ? $options['id'] : md5($title),
 				'collapsible' => isset($options['collapsible']) ? $options['collapsible'] : true,
 				'collapsed'   => isset($options['collapsed']) ? $options['collapsed'] : false,
+				'checkbox'    => isset($options['checkbox']) ? $options['checkbox'] : true,
 			),
 		));
 

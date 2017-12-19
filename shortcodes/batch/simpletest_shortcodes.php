@@ -47,6 +47,11 @@ class simpletest_shortcodes extends e_shortcode
 			$html .= '</a>';
 		}
 
+		if((bool) $this->var['options']['checkbox'] === true)
+		{
+			return e107::getForm()->checkbox('cb', 1) . ' ' . $html;
+		}
+
 		return $html;
 	}
 

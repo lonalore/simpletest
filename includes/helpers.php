@@ -624,7 +624,11 @@ function simpletest_clean_environment()
 	{
 		$count = simpletest_clean_results_table();
 
-		if($count > 1)
+		if($count == 0)
+		{
+			$message = 'No leftover test results.';
+		}
+		elseif($count > 1)
 		{
 			$message = e107::getParser()->lanVars('Removed [x] test results.', array(
 				'x' => $count,
@@ -640,7 +644,7 @@ function simpletest_clean_environment()
 		$message = 'Clear results is disabled and the test results table will not be cleared.';
 	}
 
-	e107::getMessage()->add($message, eMessage::E_WARNING);
+	e107::getMessage()->add($message);
 	e107::getCache()->clear('simpletest_test');
 }
 
@@ -649,19 +653,23 @@ function simpletest_clean_environment()
  */
 function simpletest_clean_database()
 {
-	$tables = array(); // TODO - get tables with 'simpletest%' prefix...
+	global $mySQLdefaultdb;
 
-	$count = 0;
+	$sql = e107::getDb();
+	$sql->gen("SELECT table_name FROM information_schema.tables WHERE table_schema='" . $mySQLdefaultdb . "' AND table_name LIKE 'simpletest%'");
 
-	foreach($tables as $table)
+	$tables = array();
+	while($row = $sql->fetch())
 	{
-		// Strip the prefix and skip tables without digits following "simpletest", e.g. {simpletest_test_id}.
-		if(preg_match('/simpletest\d+.*/', $table, $matches))
-		{
-			// TODO - drop $matches[0] table...
-			$count++;
-		}
+		$tables[] = $row['table_name'];
 	}
+
+	if(!empty($tables))
+	{
+		$sql->gen("DROP TABLE " . implode(', ', $tables));
+	}
+
+	$count = count($tables);
 
 	if($count > 0)
 	{
