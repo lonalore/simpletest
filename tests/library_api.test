@@ -35,8 +35,31 @@ class LibraryUnitTest extends e107UnitTestCase
 	 */
 	public function testLibraryDetect()
 	{
-		$this->assertEqual(e107::library('detect', 'example'), false, "e107::library('detect', '...') returns false for a missing library.");
-		$this->assertEqual(e107::library('detect', 'bootstrap'), true, "e107::library('detect', '...') returns true for a core library.");
+		// Test with missing library.
+		$library = e107::library('detect', 'example_missing');
+		$this->verbose('<pre>' . var_export($library, true) . '</pre>');
+		$this->assertEqual($library, false, "e107::library('detect', '...') returns false for a missing library.");
+
+		// Test with core library.
+		$library = e107::library('detect', 'bootstrap');
+		$this->verbose('<pre>' . var_export($library, true) . '</pre>');
+		$this->assertEqual($library, true, "e107::library('detect', '...') returns true for a core library.");
+	}
+
+	/**
+	 * Tests e107::library('load', '...').
+	 */
+	public function testLibraryLoad()
+	{
+		// Test with missing library.
+		$library = e107::library('load', 'example_missing');
+		$this->verbose('<pre>' . var_export($library, true) . '</pre>');
+		$this->assertEqual($library, false, "e107::library('load', '...') returns false for a missing library.");
+
+		// Test with core library.
+		$library = e107::library('load', 'bootstrap');
+		$this->verbose('<pre>' . var_export($library, true) . '</pre>');
+		$this->assertEqual($library, true, "e107::library('load', '...') returns true for a core library.");
 	}
 
 }

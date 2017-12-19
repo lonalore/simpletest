@@ -97,7 +97,7 @@ function simpletest_verbose($message, $original_file_directory = null, $test_cla
 
 		$file_directory = rtrim($original_file_directory, '/');
 		$class = $test_class;
-		$verbose = isset($prefs['verbose']) ? $prefs['verbose'] : true;
+		$verbose = isset($prefs['verbose']) ? (bool) $prefs['verbose'] : true;
 		$directory = $file_directory . '/simpletest/verbose';
 		$writable = simpletest_file_prepare_directory($directory, 1);
 

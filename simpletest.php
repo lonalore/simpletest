@@ -987,6 +987,8 @@ class e107WebTestCase extends e107TestCase
 
 	protected $originalSiteHash;
 
+	protected $removeTables;
+
 	/**
 	 * Constructor for e107WebTestCase.
 	 */
@@ -994,8 +996,11 @@ class e107WebTestCase extends e107TestCase
 	{
 		parent::__construct($test_id);
 
+		$prefs = e107::getPlugConfig('simpletest')->getPref();
+
 		$this->skipClasses[__CLASS__] = true;
 		$this->originalSiteHash = e107::getInstance()->site_path;
+		$this->removeTables = isset($prefs['remove_tables']) ? (bool) $prefs['remove_tables'] : true;
 	}
 
 	/**
@@ -1109,18 +1114,21 @@ class e107WebTestCase extends e107TestCase
 		simpletest_file_delete_recursive($system_files_directory);
 
 		// Remove all prefixed tables.
-		$sql = e107::getDb('SimpleTestE107TestCase');
-		$sql->gen("SELECT table_name FROM information_schema.tables WHERE table_schema='" . $mySQLdefaultdb . "' AND table_name LIKE 'simpletest%'");
-
-		$tables = array();
-		while($row = $sql->fetch())
+		if($this->removeTables)
 		{
-			$tables[] = $row['table_name'];
-		}
+			$sql = e107::getDb('SimpleTestE107TestCase');
+			$sql->gen("SELECT table_name FROM information_schema.tables WHERE table_schema='" . $mySQLdefaultdb . "' AND table_name LIKE 'simpletest%'");
 
-		if(!empty($tables))
-		{
-			$sql->gen("DROP TABLE " . implode(', ', $tables));
+			$tables = array();
+			while($row = $sql->fetch())
+			{
+				$tables[] = $row['table_name'];
+			}
+
+			if(!empty($tables))
+			{
+				$sql->gen("DROP TABLE " . implode(', ', $tables));
+			}
 		}
 
 		// Restore the original connection prefix.

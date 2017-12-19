@@ -27,8 +27,7 @@ function simpletest_run_tests_process($tests, $test_id, &$context)
 
 	e107_require_once(e_PLUGIN . 'simpletest/simpletest.php');
 
-	// For this example, we decide that we can safely process 1 comment
-	// at a time without a timeout.
+	// We can safely process 1 test at a time without a timeout.
 	$limit = 1;
 
 	for($i = 0; $i < $limit; $i++)
@@ -66,8 +65,7 @@ function simpletest_run_tests_process($tests, $test_id, &$context)
 		}
 	}
 
-	// Inform the batch engine that we are not finished,
-	// and provide an estimation of the completion level we reached.
+	// Inform the batch engine that we are not finished, and provide an estimation of the completion level we reached.
 	if($context['sandbox']['progress'] != $context['sandbox']['max'])
 	{
 		$context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];

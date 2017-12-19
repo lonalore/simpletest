@@ -19,7 +19,6 @@
         <pref name='httpauth_method'>1</pref>
         <pref name='httpauth_username'></pref>
         <pref name='httpauth_password'></pref>
-        <pref name='remote_url'></pref>
     </pluginPrefs>
     <dependencies>
         <plugin name='batch' min_version='1.0'/>

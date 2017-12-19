@@ -128,7 +128,6 @@ class simpletest_admin_ui extends e_admin_ui
 	protected $preftabs = array(
 		LAN_PLUGIN_ST_ADMIN_02,
 		LAN_PLUGIN_ST_ADMIN_03,
-		LAN_PLUGIN_ST_ADMIN_04,
 	);
 
 	/**
@@ -188,13 +187,6 @@ class simpletest_admin_ui extends e_admin_ui
 			'type'  => 'text',
 			'data'  => 'str',
 			'tab'   => 1,
-		),
-		'remote_url'        => array(
-			'title' => LAN_PLUGIN_ST_ADMIN_20,
-			'help'  => LAN_PLUGIN_ST_ADMIN_21,
-			'type'  => 'text',
-			'data'  => 'str',
-			'tab'   => 2,
 		),
 	);
 
