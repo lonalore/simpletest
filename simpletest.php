@@ -8,6 +8,16 @@
 e107_require_once(e_PLUGIN . 'simpletest/includes/helpers.php');
 e107_require_once(e_PLUGIN . 'simpletest/includes/e107.php');
 
+/**
+ * Global variable that holds information about the tests being run.
+ *
+ * An array, with the following keys:
+ *  - 'test_run_id': the ID of the test being run
+ *
+ * @var array
+ */
+global $e107_test_info;
+
 
 /**
  * Base class for e107 tests.
@@ -1075,7 +1085,6 @@ class e107WebTestCase extends e107TestCase
 		// Set the test information for use in other parts of e107.
 		$test_info = &$GLOBALS['e107_test_info'];
 		$test_info['test_run_id'] = $this->databasePrefix;
-		$test_info['in_child_site'] = false;
 
 		$this->setUpInstall(func_get_args());
 
