@@ -6,6 +6,7 @@
  */
 
 e107_require_once(e_PLUGIN . 'simpletest/includes/helpers.php');
+e107_require_once(e_PLUGIN . 'simpletest/includes/e107.php');
 
 
 /**
@@ -772,14 +773,28 @@ class e107UnitTestCase extends e107TestCase
 	protected $originalSiteHash;
 
 	/**
+	 * @var string
+	 */
+	protected $siteHash;
+
+	/**
 	 * Constructor for e107UnitTestCase.
 	 */
 	function __construct($test_id = null)
 	{
 		parent::__construct($test_id);
 
+		global $mySQLprefix;
+
+		// Replace MySQL prefix on DB instances.
+		$this->originalMySQLPrefix = $mySQLprefix;
+
 		$this->originalSiteHash = e107::getInstance()->site_path;
 		$this->skipClasses[__CLASS__] = true;
+
+		// Generate a temporary prefixed database to ensure that tests have a clean starting point.
+		$this->databasePrefix = 'simpletest' . mt_rand(1000, 1000000);
+		$this->siteHash = 'simpletest/' . substr($this->databasePrefix, 10);
 	}
 
 	/**
@@ -790,24 +805,15 @@ class e107UnitTestCase extends e107TestCase
 	 */
 	protected function setUp()
 	{
-		global $mySQLprefix;
-
-		// Generate temporary prefixed database to ensure that tests have a clean starting point.
-		$this->databasePrefix = 'simpletest' . mt_rand(1000, 1000000);
-
-		$site_hash = 'simpletest/' . substr($this->databasePrefix, 10);
-
 		// Get path for test (media) directory.
-		$media_files_directory = rtrim(e_MEDIA_BASE, '/') . '/' . $site_hash;
+		$media_files_directory = rtrim(e_MEDIA_BASE, '/') . '/' . $this->siteHash;
 		// Get path for test (system) directory.
-		$system_files_directory = rtrim(e_SYSTEM_BASE, '/') . '/' . $site_hash;
+		$system_files_directory = rtrim(e_SYSTEM_BASE, '/') . '/' . $this->siteHash;
 
 		// Prepare directories.
 		simpletest_file_prepare_directory($media_files_directory, 1);
 		simpletest_file_prepare_directory($system_files_directory, 1);
 
-		// Replace MySQL prefix on DB instances.
-		$this->originalMySQLPrefix = $mySQLprefix;
 		// Get all registered instances.
 		$instances = e107::getRegistry('_all_');
 		// Find DB instances and replace MySQL prefix on them.
@@ -841,12 +847,10 @@ class e107UnitTestCase extends e107TestCase
 			}
 		}
 
-		$site_hash = 'simpletest/' . substr($this->databasePrefix, 10);
-
 		// Get path for test (media) directory.
-		$media_files_directory = rtrim(e_MEDIA_BASE, '/') . '/' . $site_hash;
+		$media_files_directory = rtrim(e_MEDIA_BASE, '/') . '/' . $this->siteHash;
 		// Get path for test (system) directory.
-		$system_files_directory = rtrim(e_SYSTEM_BASE, '/') . '/' . $site_hash;
+		$system_files_directory = rtrim(e_SYSTEM_BASE, '/') . '/' . $this->siteHash;
 
 		// Delete test files directories.
 		simpletest_file_delete_recursive($media_files_directory);
@@ -986,9 +990,19 @@ class e107WebTestCase extends e107TestCase
 	protected $originalSiteHash;
 
 	/**
+	 * @var string
+	 */
+	protected $siteHash;
+
+	/**
 	 * @var bool
 	 */
 	protected $removeTables;
+
+	/**
+	 * @var SimpleTestE107
+	 */
+	protected $e107site;
 
 	/**
 	 * Constructor for e107WebTestCase.
@@ -997,11 +1011,20 @@ class e107WebTestCase extends e107TestCase
 	{
 		parent::__construct($test_id);
 
+		global $mySQLprefix;
+
+		// Replace MySQL prefix on DB instances.
+		$this->originalMySQLPrefix = $mySQLprefix;
+
 		$prefs = e107::getPlugConfig('simpletest')->getPref();
 
 		$this->skipClasses[__CLASS__] = true;
 		$this->originalSiteHash = e107::getInstance()->site_path;
 		$this->removeTables = isset($prefs['remove_tables']) ? (bool) $prefs['remove_tables'] : true;
+
+		// Generate a temporary prefixed database to ensure that tests have a clean starting point.
+		$this->databasePrefix = 'simpletest' . mt_rand(1000, 1000000);
+		$this->siteHash = 'simpletest/' . substr($this->databasePrefix, 10);
 	}
 
 	/**
@@ -1015,19 +1038,12 @@ class e107WebTestCase extends e107TestCase
 	 */
 	protected function setUp()
 	{
-		global $mySQLprefix;
-
-		// Generate a temporary prefixed database to ensure that tests have a clean starting point.
-		$this->databasePrefix = 'simpletest' . mt_rand(1000, 1000000);
-
 		$update = array(
 			'last_prefix' => $this->databasePrefix,
 			'WHERE'       => 'test_id = ' . $this->testId,
 		);
 		e107::getDb('SimpleTestE107TestCase')->update('simpletest_test_id', $update, false);
 
-		// Replace MySQL prefix on DB instances.
-		$this->originalMySQLPrefix = $mySQLprefix;
 		// Get all registered instances.
 		$instances = e107::getRegistry('_all_');
 		// Find DB instances and replace MySQL prefix on them.
@@ -1041,12 +1057,10 @@ class e107WebTestCase extends e107TestCase
 			}
 		}
 
-		$site_hash = 'simpletest/' . substr($this->databasePrefix, 10);
-
 		// Get path for test (media) directory.
-		$media_files_directory = rtrim(e_MEDIA_BASE, '/') . '/' . $site_hash;
+		$media_files_directory = rtrim(e_MEDIA_BASE, '/') . '/' . $this->siteHash;
 		// Get path for test (system) directory.
-		$system_files_directory = rtrim(e_SYSTEM_BASE, '/') . '/' . $site_hash;
+		$system_files_directory = rtrim(e_SYSTEM_BASE, '/') . '/' . $this->siteHash;
 
 		// Prepare directories.
 		simpletest_file_prepare_directory($media_files_directory, 1);
@@ -1061,7 +1075,7 @@ class e107WebTestCase extends e107TestCase
 		$test_info['test_run_id'] = $this->databasePrefix;
 		$test_info['in_child_site'] = false;
 
-		$this->setUpInstall(func_get_args(), $site_hash);
+		$this->setUpInstall(func_get_args());
 
 		set_time_limit($this->timeLimit);
 	}
@@ -1069,19 +1083,17 @@ class e107WebTestCase extends e107TestCase
 	/**
 	 * Perform e107 installation.
 	 */
-	protected function setUpInstall(array $plugins, $site_hash)
+	protected function setUpInstall(array $plugins)
 	{
-		e107_require_once(e_PLUGIN . 'simpletest/includes/e107.php');
-
 		$prefix = $this->databasePrefix . '_';
 
-		$install = new SimpleTestE107($prefix, $site_hash);
-		$install->createTables();
-		$install->importConfig();
+		$this->e107site = new SimpleTestE107($prefix, $this->siteHash);
+		$this->e107site->createTables();
+		$this->e107site->importDefaultConfig();
 
 		foreach($plugins as $plugin)
 		{
-			$install->installPlugin($plugin);
+			$this->e107site->installPlugin($plugin);
 		}
 	}
 
@@ -1103,12 +1115,10 @@ class e107WebTestCase extends e107TestCase
 			$this->pass($message, 'E-mail');
 		}
 
-		$site_hash = 'simpletest/' . substr($this->databasePrefix, 10);
-
 		// Get path for test (media) directory.
-		$media_files_directory = rtrim(e_MEDIA_BASE, '/') . '/' . $site_hash;
+		$media_files_directory = rtrim(e_MEDIA_BASE, '/') . '/' . $this->siteHash;
 		// Get path for test (system) directory.
-		$system_files_directory = rtrim(e_SYSTEM_BASE, '/') . '/' . $site_hash;
+		$system_files_directory = rtrim(e_SYSTEM_BASE, '/') . '/' . $this->siteHash;
 
 		// Delete test files directories.
 		simpletest_file_delete_recursive($media_files_directory);

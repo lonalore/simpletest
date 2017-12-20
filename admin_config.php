@@ -291,6 +291,12 @@ class simpletest_admin_ui extends e_admin_ui
 
 		$test_id = e107::getDb()->insert('simpletest_test_id', array('last_prefix' => ''));
 
+		if(empty($test_id))
+		{
+			e107::getMessage()->addError('Cannot prepare batch process!', 'default', true);
+			e107::redirect(e_PLUGIN_ABS . 'simpletest/admin_config.php?mode=main&action=list');
+		}
+
 		// Clear out the previous verbose files.
 		$system_files_directory = e_SYSTEM_BASE . 'simpletest/verbose';
 		simpletest_file_delete_recursive($system_files_directory);
