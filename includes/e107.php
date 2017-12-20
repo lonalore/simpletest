@@ -111,6 +111,9 @@ class SimpleTestE107
 	 */
 	public function importDefaultConfig()
 	{
+		// $coreConfig = e_CORE . "xml/default_install.xml";
+		// e107::getXml()->e107Import($coreConfig, 'add', true, false, $this->db);
+
 		$data = array(
 			'prefs'    => array(),
 			'database' => array(),
