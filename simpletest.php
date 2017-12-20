@@ -814,6 +814,7 @@ class e107UnitTestCase extends e107TestCase
 		simpletest_file_prepare_directory($media_files_directory, 1);
 		simpletest_file_prepare_directory($system_files_directory, 1);
 
+		// Replace table prefixes on DB instances in order to avoid any kind of data modification on the current DB.
 		// Get all registered instances.
 		$instances = e107::getRegistry('_all_');
 		// Find DB instances and replace MySQL prefix on them.
@@ -1044,6 +1045,7 @@ class e107WebTestCase extends e107TestCase
 		);
 		e107::getDb('SimpleTestE107TestCase')->update('simpletest_test_id', $update, false);
 
+		// Replace table prefixes on DB instances in order to avoid any kind of data modification on the current DB.
 		// Get all registered instances.
 		$instances = e107::getRegistry('_all_');
 		// Find DB instances and replace MySQL prefix on them.
