@@ -17,7 +17,7 @@ First, we will need to make sure that the SimpleTest plugin is installed. But be
 - PHP **cURL** extension
 - PHP **DOMDocument** class
 - PHP **open_basedir** restriction need to be disabled. Check your webserver configuration or contact your web host.
-- [Runkit](https://github.com/zenovich/runkit) for PHP5 / [Runkit7](https://github.com/runkit7/runkit7) for PHP7
+- [Runkit](https://github.com/zenovich/runkit) for PHP5 / [Runkit7](https://github.com/runkit7/runkit7) for PHP7. Sorry, but Runkit is required for redefining the dozen of constants, which are used by e107.
 
 Before or after plugin installation, place the following code at the end of your `e107_config.php` file. this is a very basic multisite solution to run Web tests.
 
@@ -25,8 +25,8 @@ Before or after plugin installation, place the following code at the end of your
 if(!empty($_SERVER['HTTP_USER_AGENT']) && strpos($_SERVER['HTTP_USER_AGENT'], 'simpletest') === 0)
 {
 	$exploded = explode(';', $_SERVER['HTTP_USER_AGENT']);
-    $mySQLprefix = $exploded[0] . '_';
-    $E107_CONFIG['site_path'] = 'simpletest/' . substr($exploded[0], 10);
+	$mySQLprefix = $exploded[0] . '_';
+	$E107_CONFIG['site_path'] = 'simpletest/' . substr($exploded[0], 10);
 }
 ```
 
