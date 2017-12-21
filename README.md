@@ -13,11 +13,11 @@ First, we will need to make sure that the SimpleTest plugin is installed. But be
 
 **Requirements**
 
-- [Batch API](https://github.com/lonalore/batch) plugin need to be installed
 - PHP **cURL** extension
 - PHP **DOMDocument** class
 - PHP **open_basedir** restriction need to be disabled. Check your webserver configuration or contact your web host.
 - [Runkit](https://github.com/zenovich/runkit) for PHP5 / [Runkit7](https://github.com/runkit7/runkit7) for PHP7. Sorry, but Runkit is required for redefining the dozen of constants, which are used by e107.
+- [Batch API](https://github.com/lonalore/batch) plugin need to be installed
 
 Before or after plugin installation, place the following code at the end of your `e107_config.php` file. this is a very basic multisite solution to run Web tests.
 
