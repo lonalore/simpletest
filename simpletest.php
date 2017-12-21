@@ -798,8 +798,8 @@ class e107UnitTestCase extends e107TestCase
 
 		// Replace MySQL prefix on DB instances.
 		$this->originalMySQLPrefix = $mySQLprefix;
-
 		$this->originalSiteHash = e107::getInstance()->site_path;
+
 		$this->skipClasses[__CLASS__] = true;
 
 		// Generate a temporary prefixed database to ensure that tests have a clean starting point.
@@ -819,10 +819,12 @@ class e107UnitTestCase extends e107TestCase
 		$media_files_directory = rtrim(e_MEDIA_BASE, '/') . '/' . $this->siteHash;
 		// Get path for test (system) directory.
 		$system_files_directory = rtrim(e_SYSTEM_BASE, '/') . '/' . $this->siteHash;
-
 		// Prepare directories.
 		simpletest_file_prepare_directory($media_files_directory, 1);
 		simpletest_file_prepare_directory($system_files_directory, 1);
+		simpletest_rewrite_paths(array(
+			$this->originalSiteHash => $this->siteHash,
+		));
 
 		// Replace table prefixes on DB instances in order to avoid any kind of data modification on the current DB.
 		// Get all registered instances.
@@ -837,6 +839,7 @@ class e107UnitTestCase extends e107TestCase
 				$instance->mySQLPrefix = $this->databasePrefix . '_';
 			}
 		}
+		simpletest_replace_constant('MPREFIX', $this->originalMySQLPrefix, $this->databasePrefix . '_');
 
 		// Set user agent to be consistent with web test case.
 		$_SERVER['HTTP_USER_AGENT'] = $this->databasePrefix;
@@ -857,15 +860,16 @@ class e107UnitTestCase extends e107TestCase
 				$instance->mySQLPrefix = $this->originalMySQLPrefix;
 			}
 		}
+		simpletest_restore_constant('MPREFIX');
 
 		// Get path for test (media) directory.
 		$media_files_directory = rtrim(e_MEDIA_BASE, '/') . '/' . $this->siteHash;
 		// Get path for test (system) directory.
 		$system_files_directory = rtrim(e_SYSTEM_BASE, '/') . '/' . $this->siteHash;
-
 		// Delete test files directories.
 		simpletest_file_delete_recursive($media_files_directory);
 		simpletest_file_delete_recursive($system_files_directory);
+		simpletest_restore_paths();
 
 		// Empty user agent.
 		$_SERVER['HTTP_USER_AGENT'] = '';
@@ -1068,15 +1072,18 @@ class e107WebTestCase extends e107TestCase
 				$instance->mySQLPrefix = $this->databasePrefix . '_';
 			}
 		}
+		simpletest_replace_constant('MPREFIX', $this->originalMySQLPrefix, $this->databasePrefix . '_');
 
 		// Get path for test (media) directory.
 		$media_files_directory = rtrim(e_MEDIA_BASE, '/') . '/' . $this->siteHash;
 		// Get path for test (system) directory.
 		$system_files_directory = rtrim(e_SYSTEM_BASE, '/') . '/' . $this->siteHash;
-
 		// Prepare directories.
 		simpletest_file_prepare_directory($media_files_directory, 1);
 		simpletest_file_prepare_directory($system_files_directory, 1);
+		simpletest_rewrite_paths(array(
+			$this->originalSiteHash => $this->siteHash,
+		));
 
 		// TODO Log fatal errors.
 		// ini_set('log_errors', 1);
@@ -1085,6 +1092,12 @@ class e107WebTestCase extends e107TestCase
 		// Set the test information for use in other parts of e107.
 		$test_info = &$GLOBALS['e107_test_info'];
 		$test_info['test_run_id'] = $this->databasePrefix;
+
+		// At this point, MPREFIX and other, path-specific constants are replaced along with MySQL prefixes
+		// for DB instances, so we use the "test" website's database now.
+		// The next step is resetting e107::getConfig() object before installing the "test" website, because
+		// e107::getConfig() object is still containing the data for the "test runner" website.
+		e107::getConfig()->reset();
 
 		$this->setUpInstall(func_get_args());
 
@@ -1096,15 +1109,37 @@ class e107WebTestCase extends e107TestCase
 	 */
 	protected function setUpInstall(array $plugins)
 	{
-		$prefix = $this->databasePrefix . '_';
+		// Install plugins needed for this test. This could have been passed in as either a single array argument
+		// or a variable number of string arguments.
+		if(isset($plugins[0]) && is_array($plugins[0]))
+		{
+			$plugins = $plugins[0];
+		}
 
-		$this->e107site = new SimpleTestE107($prefix, $this->siteHash);
+		$config = array(
+			'theme'          => 'bootstrap3',
+			'sitename'       => 'My Test Website',
+			'sitelanguage'   => 'English',
+			'sitelang_init'  => 'English',
+			'siteadmin'      => 'Administrator',
+			'siteadminuser'  => 'admin',
+			'siteadminpass'  => 'admin',
+			'siteadminemail' => 'admin@simpletest.dev',
+			'replyto_name'   => 'Administrator',
+			'replyto_email'  => 'admin@simpletest.dev',
+			'sitetag'        => 'e107 Website System',
+			'siteurl'        => e_HTTP,
+			'sitedisclaimer' => '',
+			'install_date'   => time(),
+		);
+
+		$this->e107site = new SimpleTestE107($this->databasePrefix . '_', $this->siteHash);
 		$this->e107site->createTables();
-		$this->e107site->importDefaultConfig();
+		$this->e107site->importDefaultConfig($config);
 
 		foreach($plugins as $plugin)
 		{
-			$this->e107site->installPlugin($plugin);
+			$this->e107site->installPlugin($plugin, true);
 		}
 	}
 
@@ -1130,10 +1165,10 @@ class e107WebTestCase extends e107TestCase
 		$media_files_directory = rtrim(e_MEDIA_BASE, '/') . '/' . $this->siteHash;
 		// Get path for test (system) directory.
 		$system_files_directory = rtrim(e_SYSTEM_BASE, '/') . '/' . $this->siteHash;
-
 		// Delete test files directories.
 		simpletest_file_delete_recursive($media_files_directory);
 		simpletest_file_delete_recursive($system_files_directory);
+		simpletest_restore_paths();
 
 		// Remove all prefixed tables.
 		if($this->removeTables)
@@ -1152,7 +1187,6 @@ class e107WebTestCase extends e107TestCase
 				$sql->gen("DROP TABLE " . implode(', ', $tables));
 			}
 		}
-
 		// Restore the original connection prefix.
 		// Get all registered instances.
 		$instances = e107::getRegistry('_all_');
@@ -1166,6 +1200,7 @@ class e107WebTestCase extends e107TestCase
 				$instance->mySQLPrefix = $this->originalMySQLPrefix;
 			}
 		}
+		simpletest_restore_constant('MPREFIX');
 
 		// Ensure that internal logged in variable and cURL options are reset.
 		$this->loggedInUser = false;
@@ -1173,6 +1208,9 @@ class e107WebTestCase extends e107TestCase
 
 		// Close the CURL handler.
 		$this->curlClose();
+
+		// Reset e107::getConfig() object in order to remove the config belongs to the "test" website.
+		e107::getConfig()->reset();
 	}
 
 	/**

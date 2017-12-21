@@ -207,6 +207,11 @@ class simpletest_admin_ui extends e_admin_ui
 		$msg = e107::getMessage();
 		$ns = e107::getRender();
 
+		if(!function_exists('runkit_constant_redefine'))
+		{
+			$msg->addError('Missing dependency: To run the tests, you need to install the Runkit PHP extension!');
+		}
+
 		e107::css('simpletest', 'assets/css/simpletest.css');
 		e107::js('simpletest', 'assets/js/simpletest.js');
 
@@ -257,7 +262,11 @@ class simpletest_admin_ui extends e_admin_ui
 			));
 		}
 
-		$html .= $form->submit('run', 'Run tests');
+		if(function_exists('runkit_constant_redefine'))
+		{
+			$html .= $form->submit('run', 'Run tests');
+		}
+
 		$html .= $form->close();
 
 		return $ns->tablerender(null, $html, 'default', true);

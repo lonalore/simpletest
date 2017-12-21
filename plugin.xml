@@ -22,7 +22,7 @@
     </pluginPrefs>
     <dependencies>
         <plugin name='batch' min_version='1.0'/>
-        <PHP name='core' min_version='5.3.0'/>
+        <php name='core' min_version='5.3.0'/>
         <extension name='curl'/>
         <extension name='xml'/>
     </dependencies>

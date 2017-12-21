@@ -702,13 +702,25 @@ function simpletest_clean_database()
  */
 function simpletest_clean_temporary_directories()
 {
-	$files = scandir(e_SYSTEM_BASE . 'simpletest');
+	$system_files = scandir(e_SYSTEM_BASE . 'simpletest');
+	$media_files = scandir(e_MEDIA_BASE . 'simpletest');
 
 	$count = 0;
 
-	foreach($files as $file)
+	foreach($system_files as $file)
 	{
 		$path = e_SYSTEM_BASE . 'simpletest/' . $file;
+
+		if(is_dir($path) && is_numeric($file))
+		{
+			simpletest_file_delete_recursive($path);
+			$count++;
+		}
+	}
+
+	foreach($media_files as $file)
+	{
+		$path = e_MEDIA_BASE . 'simpletest/' . $file;
 
 		if(is_dir($path) && is_numeric($file))
 		{
@@ -1012,4 +1024,169 @@ function simpletest_hmac_base64($data, $key)
 	$hmac = base64_encode(hash_hmac('sha256', (string) $data, (string) $key, true));
 	// Modify the hmac so it's safe to use in URLs.
 	return strtr($hmac, array('+' => '-', '/' => '_', '=' => ''));
+}
+
+/**
+ * Helper function to get all (path) constants, which need to be replaced.
+ *
+ * @return array
+ *   Contains the names for constants.
+ */
+function simpletest_get_path_constants()
+{
+	return array(
+		'e_AVATAR',             // e107_media/[HASH]/avatars/
+		'e_AVATAR_ABS',         // /e107_media/[HASH]/avatars/
+		'e_AVATAR_DEFAULT',     // e107_media/[HASH]/avatars/default/
+		'e_AVATAR_DEFAULT_ABS', // /e107_media/[HASH]/avatars/default/
+		'e_AVATAR_UPLOAD',      // e107_media/[HASH]/avatars/upload/
+		'e_AVATAR_UPLOAD_ABS',  // /e107_media/[HASH]/avatars/upload/
+		'e_DOWNLOAD',           // e107_media/[HASH]/files/
+		'e_MEDIA',              // e107_media/[HASH]/
+		'e_MEDIA_ABS',          // /e107_media/[HASH]/
+		// 'e_MEDIA_BASE',         // e107_media/
+		'e_MEDIA_FILE',         // e107_media/[HASH]/files/
+		'e_MEDIA_FILE_ABS',     // /e107_media/[HASH]/files/
+		'e_MEDIA_ICON',         // e107_media/[HASH]/icons/
+		'e_MEDIA_ICON_ABS',     // /e107_media/[HASH]/icons/
+		'e_MEDIA_IMAGE',        // e107_media/[HASH]/images/
+		'e_MEDIA_IMAGE_ABS',    // /e107_media/[HASH]/images/
+		'e_MEDIA_VIDEO',        // e107_media/[HASH]/videos/
+		'e_MEDIA_VIDEO_ABS',    // /e107_media/[HASH]/videos/
+
+		'e_BACKUP',             // e107_system/[HASH]/backup/
+		'e_CACHE',              // e107_system/[HASH]/cache/
+		'e_CACHE_CONTENT',      // e107_system/[HASH]/cache/content/
+		'e_CACHE_DB',           // e107_system/[HASH]/cache/db/
+		'e_CACHE_IMAGE',        // e107_system/[HASH]/cache/images/
+		'e_CACHE_URL',          // e107_system/[HASH]/cache/url/
+		'e_IMPORT',             // e107_system/[HASH]/import/
+		'e_LOG',                // e107_system/[HASH]/logs/
+		'e_SYSTEM',             // e107_system/[HASH]/
+		// 'e_SYSTEM_BASE',        // e107_system/
+		'e_TEMP',               // e107_system/[HASH]/temp/
+		'e_UPLOAD',             // e107_system/[HASH]/temp/
+	);
+}
+
+/**
+ * Replaces constants are set in simpletest_get_path_constants() by the given rules.
+ *
+ * @param array $rules
+ *   Associative array, whose keys are the $search params and the values are the $replace params for
+ *   simpletest_replace_constant() function.
+ *
+ * @see simpletest_get_path_constants()
+ * @see simpletest_replace_constant()
+ */
+function simpletest_rewrite_paths($rules = array())
+{
+	if(empty($rules))
+	{
+		return;
+	}
+
+	$constants = simpletest_get_path_constants();
+
+	foreach($constants as $constant)
+	{
+		foreach($rules as $search => $replace)
+		{
+			simpletest_replace_constant($constant, $search, $replace);
+		}
+	}
+}
+
+/**
+ * Restores the original values for each constants are set in simpletest_get_path_constants().
+ *
+ * @see simpletest_get_path_constants()
+ */
+function simpletest_restore_paths()
+{
+	$constants = simpletest_get_path_constants();
+
+	foreach($constants as $constant)
+	{
+		simpletest_restore_constant($constant);
+	}
+}
+
+/**
+ * Gets the current or original value of a constant.
+ *
+ * @param $constant_name
+ *   The name of the constant.
+ * @param bool $original
+ *   If TRUE, the constant's original value will be returned.
+ *
+ * @return mixed
+ *   The value for the constant.
+ */
+function simpletest_get_constant($constant_name, $original = false)
+{
+	static $original_constant_values;
+
+	if(!isset($original_constant_values[$constant_name]))
+	{
+		$original_constant_values[$constant_name] = constant($constant_name);
+	}
+
+	if($original)
+	{
+		return $original_constant_values[$constant_name];
+	}
+
+	return constant($constant_name);
+}
+
+/**
+ * Replace all occurrences of the search string with the replacement string.
+ *
+ * @param $constant_name
+ *   The name of the constant being searched and replaced on.
+ * @param $search
+ *   The value being searched for, otherwise known as the needle.
+ * @param $replace
+ *   The replacement value that replaces found search values.
+ */
+function simpletest_replace_constant($constant_name, $search, $replace)
+{
+	if(empty($constant_name))
+	{
+		return;
+	}
+
+	if(!function_exists('runkit_constant_redefine'))
+	{
+		// TODO threw an exception?
+		return;
+	}
+
+	$value = simpletest_get_constant($constant_name);
+	$value = str_replace($search, $replace, $value);
+	runkit_constant_redefine($constant_name, $value);
+}
+
+/**
+ * Restores a constant's original value.
+ *
+ * @param string $constant_name
+ *   Name fo the constant.
+ */
+function simpletest_restore_constant($constant_name)
+{
+	if(empty($constant_name))
+	{
+		return;
+	}
+
+	if(!function_exists('runkit_constant_redefine'))
+	{
+		// TODO threw an exception?
+		return;
+	}
+
+	$value = simpletest_get_constant($constant_name, true);
+	runkit_constant_redefine($constant_name, $value);
 }
