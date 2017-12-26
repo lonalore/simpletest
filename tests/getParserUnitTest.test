@@ -1,0 +1,56 @@
+<?php
+
+/**
+ * @file
+ * Contains getParserUnitTest.
+ */
+
+
+/**
+ * Tests basic e107::getParser() functions.
+ */
+class getParserUnitTest extends e107UnitTestCase
+{
+
+	/**
+	 * Provides metadata about this test.
+	 *
+	 * @return array
+	 *   An array of test metadata with the following keys:
+	 *   - name: The name of the test.
+	 *   - description: The description of the test.
+	 *   - group: The group of the test.
+	 */
+	public static function getInfo()
+	{
+		return array(
+			'name'        => 'getParser() functional tests',
+			'description' => 'Tests basic functions provided by e107::getParser().',
+			'group'       => 'Parser functions',
+		);
+	}
+
+	/**
+	 * Tests e107::getParser()->toGlyph('...').
+	 */
+	public function testToGlyph()
+	{
+		$tp = e107::getParser();
+
+		$verbose = array(
+			'result'   => $tp->toGlyph('glyphicon-ok'),
+			'expected' => "<span class='glyphicon glyphicon-ok' ><!-- --></span> ",
+		);
+		$this->verbose('<pre>' . htmlspecialchars(var_export($verbose, true)) . '</pre>');
+		$this->assertEqual($verbose['result'], $verbose['expected'], "toGlyph('glyphicon-ok') returns the expected HTML.");
+
+
+		$verbose = array(
+			'result'   => $tp->toGlyph('fa-cogs'),
+			'expected' => "<i class='fa fa-cogs' ><!-- --></i> ",
+		);
+		$this->verbose('<pre>' . htmlspecialchars(var_export($verbose, true)) . '</pre>');
+		$this->assertEqual($verbose['result'], $verbose['expected'], "toGlyph('fa-cogs') returns the expected HTML.");
+	}
+
+}

@@ -2,14 +2,14 @@
 
 /**
  * @file
- * Contains LibraryUnitTest.
+ * Contains getLibraryUnitTest.
  */
 
 
 /**
  * Tests basic Libraries API functions.
  */
-class LibraryUnitTest extends e107UnitTestCase
+class getLibraryUnitTest extends e107UnitTestCase
 {
 
 	/**
