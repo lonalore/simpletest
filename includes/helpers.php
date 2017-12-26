@@ -1190,3 +1190,26 @@ function simpletest_restore_constant($constant_name)
 	$value = simpletest_get_constant($constant_name, true);
 	runkit_constant_redefine($constant_name, $value);
 }
+
+/**
+ * Checks dependencies required for running tests.
+ *
+ * @param bool $bool
+ *   If TRUE, function will return TRUE if all dependencies are met. Otherwise FALSE.
+ *   IF FALSE, function will return an array contains error messages, or empty array if all dependencies are met.
+ *
+ * @return array|bool
+ */
+function simpletest_check_dependencies($bool = false)
+{
+	$errors = array();
+
+	if(!function_exists('runkit_constant_redefine'))
+	{
+		$errors[] = e107::getParser()->lanVars('To run the tests, you need to install the [x] PHP extension!', array(
+			'x' => '<a href="https://github.com/lonalore/simpletest#setup" target="_blank">Runkit</a>',
+		));
+	}
+
+	return !$bool ? $errors : empty($errors);
+}
