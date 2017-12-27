@@ -26,7 +26,8 @@ if(!empty($_SERVER['HTTP_USER_AGENT']) && strpos($_SERVER['HTTP_USER_AGENT'], 's
 {
 	$exploded = explode(';', $_SERVER['HTTP_USER_AGENT']);
 	$mySQLprefix = $exploded[0] . '_';
-	$E107_CONFIG['site_path'] = 'simpletest/' . substr($exploded[0], 10);
+	$E107_CONFIG['site_path'] = substr($exploded[0], 10);
+	$E107_CONFIG['simpletest'] = true;
 }
 ```
 
