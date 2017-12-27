@@ -107,7 +107,7 @@ abstract class e107TestCase
 	 *
 	 * @return bool
 	 */
-	protected function assert($status, $message = '', $group = 'Other', array $caller = null)
+	protected function assert($status, $message = '', $group = 'Other', array $caller = null) // TODO lans.
 	{
 		// Convert boolean status to string status.
 		if(is_bool($status))
@@ -162,7 +162,7 @@ abstract class e107TestCase
 	 * @see e107TestCase::assert()
 	 * @see e107TestCase::deleteAssert()
 	 */
-	public static function insertAssert($test_id, $test_class, $status, $message = '', $group = 'Other', array $caller = array())
+	public static function insertAssert($test_id, $test_class, $status, $message = '', $group = 'Other', array $caller = array()) // TODO lans.
 	{
 		// Convert boolean status to string status.
 		if(is_bool($status))
@@ -171,9 +171,9 @@ abstract class e107TestCase
 		}
 
 		$caller += array(
-			'function' => 'Unknown', // FIXME - LANs...
+			'function' => 'Unknown', // TODO lans.
 			'line'     => 0,
-			'file'     => 'Unknown', // FIXME - LANs...
+			'file'     => 'Unknown', // TODO lans.
 		);
 
 		$assertion = array(
@@ -240,9 +240,9 @@ abstract class e107TestCase
 	 * @return bool
 	 *   TRUE if the assertion succeeded, FALSE otherwise.
 	 */
-	protected function assertTrue($value, $message = '', $group = 'Other')
+	protected function assertTrue($value, $message = '', $group = 'Other') // TODO lans.
 	{
-		// FIXME - LANs...
+		// TODO lans.
 		$default_message = e107::getParser()->lanVars('Value [x] is TRUE.', array(
 			'x' => var_export($value, true),
 		));
@@ -263,9 +263,9 @@ abstract class e107TestCase
 	 * @return bool
 	 *   TRUE if the assertion succeeded, FALSE otherwise.
 	 */
-	protected function assertFalse($value, $message = '', $group = 'Other')
+	protected function assertFalse($value, $message = '', $group = 'Other') // TODO lans.
 	{
-		// FIXME - LANs...
+		// TODO lans.
 		$default_message = e107::getParser()->lanVars('Value [x] is FALSE.', array(
 			'x' => var_export($value, true),
 		));
@@ -286,9 +286,9 @@ abstract class e107TestCase
 	 * @return bool
 	 *   TRUE if the assertion succeeded, FALSE otherwise.
 	 */
-	protected function assertNull($value, $message = '', $group = 'Other')
+	protected function assertNull($value, $message = '', $group = 'Other') // TODO lans.
 	{
-		// FIXME - LANs...
+		// TODO lans.
 		$default_message = e107::getParser()->lanVars('Value [x] is NULL.', array(
 			'x' => var_export($value, true),
 		));
@@ -309,9 +309,9 @@ abstract class e107TestCase
 	 * @return bool
 	 *   TRUE if the assertion succeeded, FALSE otherwise.
 	 */
-	protected function assertNotNull($value, $message = '', $group = 'Other')
+	protected function assertNotNull($value, $message = '', $group = 'Other') // TODO lans.
 	{
-		// FIXME - LANs...
+		// TODO lans.
 		$default_message = e107::getParser()->lanVars('Value [x] is not NULL.', array(
 			'x' => var_export($value, true),
 		));
@@ -334,9 +334,9 @@ abstract class e107TestCase
 	 * @return bool
 	 *   TRUE if the assertion succeeded, FALSE otherwise.
 	 */
-	protected function assertEqual($first, $second, $message = '', $group = 'Other')
+	protected function assertEqual($first, $second, $message = '', $group = 'Other') // TODO lans.
 	{
-		// FIXME - LANs...
+		// TODO lans.
 		$default_message = e107::getParser()->lanVars('Value [x] is equal to value [y].', array(
 			'x' => var_export($first, true),
 			'y' => var_export($second, true),
@@ -360,9 +360,9 @@ abstract class e107TestCase
 	 * @return bool
 	 *   TRUE if the assertion succeeded, FALSE otherwise.
 	 */
-	protected function assertNotEqual($first, $second, $message = '', $group = 'Other')
+	protected function assertNotEqual($first, $second, $message = '', $group = 'Other') // TODO lans.
 	{
-		// FIXME - LANs...
+		// TODO lans.
 		$default_message = e107::getParser()->lanVars('Value [x] is not equal to value [y].', array(
 			'x' => var_export($first, true),
 			'y' => var_export($second, true),
@@ -386,9 +386,9 @@ abstract class e107TestCase
 	 * @return bool
 	 *   TRUE if the assertion succeeded, FALSE otherwise.
 	 */
-	protected function assertIdentical($first, $second, $message = '', $group = 'Other')
+	protected function assertIdentical($first, $second, $message = '', $group = 'Other') // TODO lans.
 	{
-		// FIXME - LANs...
+		// TODO lans.
 		$default_message = e107::getParser()->lanVars('Value [x] is identical to value [y].', array(
 			'x' => var_export($first, true),
 			'y' => var_export($second, true),
@@ -412,9 +412,9 @@ abstract class e107TestCase
 	 * @return bool
 	 *   TRUE if the assertion succeeded, FALSE otherwise.
 	 */
-	protected function assertNotIdentical($first, $second, $message = '', $group = 'Other')
+	protected function assertNotIdentical($first, $second, $message = '', $group = 'Other') // TODO lans.
 	{
-		// FIXME - LANs...
+		// TODO lans.
 		$default_message = e107::getParser()->lanVars('Value [x] is not identical to value [y].', array(
 			'x' => var_export($first, true),
 			'y' => var_export($second, true),
@@ -434,7 +434,7 @@ abstract class e107TestCase
 	 * @return bool
 	 *   TRUE.
 	 */
-	protected function pass($message = null, $group = 'Other')
+	protected function pass($message = null, $group = 'Other') // TODO lans.
 	{
 		return $this->assert(true, $message, $group);
 	}
@@ -449,7 +449,7 @@ abstract class e107TestCase
 	 * @return bool
 	 *   FALSE.
 	 */
-	protected function fail($message = null, $group = 'Other')
+	protected function fail($message = null, $group = 'Other') // TODO lans.
 	{
 		return $this->assert(false, $message, $group);
 	}
@@ -467,13 +467,13 @@ abstract class e107TestCase
 	 * @return bool
 	 *   FALSE.
 	 */
-	protected function error($message = '', $group = 'Other', array $caller = null)
+	protected function error($message = '', $group = 'Other', array $caller = null) // TODO lans.
 	{
 		if($group == 'User notice')
 		{
 			// Since 'User notice' is set by trigger_error() which is used for debug set the message to a status of
 			// 'debug'.
-			return $this->assert('debug', $message, 'Debug', $caller);
+			return $this->assert('debug', $message, 'Debug', $caller); // TODO lans... 'Debug'
 		}
 
 		return $this->assert('exception', $message, $group, $caller);
@@ -498,7 +498,7 @@ abstract class e107TestCase
 		{
 			$url = SITEURLBASE . '/' . $SYSTEM_DIRECTORY . 'simpletest/verbose/' . get_class($this) . '-' . $id . '.html';
 
-			// FIXME - LANs...
+			// TODO lans.
 			$link = '<a href="' . $url . '" target="_blank">' . 'Verbose message' . '</a>';
 
 			$this->error($link, 'User notice');
@@ -562,10 +562,10 @@ abstract class e107TestCase
 					'function' => $class . '->' . $method . '()',
 				);
 
-				// FIXME - LANs...
+				// TODO lans.
 				$message = 'The test did not complete due to a fatal error.';
 
-				$completion_check_id = e107TestCase::insertAssert($this->testId, $class, false, $message, 'Completion check', $caller);
+				$completion_check_id = e107TestCase::insertAssert($this->testId, $class, false, $message, 'Completion check', $caller); // TODO lans.
 
 				$this->setUp();
 
@@ -601,6 +601,7 @@ abstract class e107TestCase
 	{
 		if($severity & error_reporting())
 		{
+			// TODO lans.
 			$error_map = array(
 				E_STRICT            => 'Run-time notice',
 				E_WARNING           => 'Warning',
@@ -639,6 +640,7 @@ abstract class e107TestCase
 		$decoded = simpletest_decode_exception($exception);
 
 		// The exception message is run through simpletest_check_plain() by simpletest_decode_exception().
+		// TODO lans.
 		$message = e107::getParser()->lanVars('[type]: [message] in [function] (line [line] of [file]).', array(
 			'type'     => $decoded['type'],
 			'message'  => $decoded['message'],
@@ -647,6 +649,7 @@ abstract class e107TestCase
 			'file'     => $decoded['file'],
 		));
 
+		// TODO lans.
 		$this->error($message, 'Uncaught exception', simpletest_get_last_caller($backtrace));
 	}
 
@@ -1157,6 +1160,7 @@ class e107WebTestCase extends e107TestCase
 		$emailCount = 0; // TODO...
 		if($emailCount)
 		{
+			// TODO lans.
 			$message = '[x] e-mails were sent during this test.';
 			$this->pass($message, 'E-mail');
 		}
@@ -1334,8 +1338,9 @@ class e107WebTestCase extends e107TestCase
 			'w' => $status,
 			'z' => strlen($this->e107GetContent()),
 		);
+		// TODO lans.
 		$message = e107::getParser()->lanVars('[x] [y] returned [w] ([z]).', $message_vars);
-		$this->assertTrue($this->e107GetContent() !== false, $message, 'Browser');
+		$this->assertTrue($this->e107GetContent() !== false, $message, 'Browser'); // TODO lans.
 		return $this->e107GetContent();
 	}
 
@@ -1551,9 +1556,9 @@ class e107WebTestCase extends e107TestCase
 
 			if($htmlDom)
 			{
-				// FIXME lans.
+				// TODO lans.
 				$message = e107::getParser()->lanVars('Valid HTML found on "[x]"', array('x' => $this->getUrl()));
-				$this->pass($message, 'Browser');
+				$this->pass($message, 'Browser'); // TODO lans.
 				// It's much easier to work with simplexml than DOM, luckily enough
 				// we can just simply import our DOM tree.
 				$this->elements = simplexml_import_dom($htmlDom);
@@ -1561,7 +1566,7 @@ class e107WebTestCase extends e107TestCase
 		}
 		if(!$this->elements)
 		{
-			// FIXME lans.
+			// TODO lans.
 			$this->fail('Parsed page successfully.', 'Browser');
 		}
 
@@ -1731,6 +1736,7 @@ class e107WebTestCase extends e107TestCase
 			// We have not found a form which contained all fields of $edit.
 			foreach($edit as $name => $value)
 			{
+				// TODO lans.
 				$message = e107::getParser()->lanVars('Failed to set field [x] to [y]', array(
 					'x' => $name,
 					'y' => $value,
@@ -1740,10 +1746,12 @@ class e107WebTestCase extends e107TestCase
 
 			if(isset($submit))
 			{
+				// TODO lans.
 				$message = e107::getParser()->lanVars('Found the [x] button', array('x' => $submit));
 				$this->assertTrue($message);
 			}
 
+			// TODO lans.
 			$message = e107::getParser()->lanVars('Found the requested form fields at [x]', array('x' => $url));
 			$this->fail($message);
 		}
@@ -2026,6 +2034,158 @@ class e107WebTestCase extends e107TestCase
 	}
 
 	/**
+	 * Pass if a link with the specified label is found, and optional with the specified index.
+	 *
+	 * @param $label
+	 *   Text between the anchor tags.
+	 * @param $index
+	 *   Link position counting from zero.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to, defaults to 'Other'.
+	 *
+	 * @return boolean
+	 *   TRUE if the assertion succeeded, FALSE otherwise.
+	 */
+	protected function assertLink($label, $index = 0, $message = '', $group = 'Other') // TODO lans.
+	{
+		$links = $this->xpath('//a[normalize-space(text())=:label]|//a[.//*[normalize-space(text())=:label]]', array(
+			':label' => $label,
+		));
+
+		// TODO lans.
+		$message = ($message ? $message : e107::getParser()->lanVars('Link with label [x] found.', array(
+			'x' => $label,
+		)));
+
+		return $this->assert(isset($links[$index]), $message, $group);
+	}
+
+	/**
+	 * Pass if a link with the specified label is not found.
+	 *
+	 * @param $label
+	 *   Text between the anchor tags.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to, defaults to 'Other'.
+	 *
+	 * @return boolean
+	 *   TRUE if the assertion succeeded, FALSE otherwise.
+	 */
+	protected function assertNoLink($label, $message = '', $group = 'Other') // TODO lans.
+	{
+		$links = $this->xpath('//a[normalize-space(text())=:label]|//a[.//*[normalize-space(text())=:label]]', array(
+			':label' => $label,
+		));
+
+		// TODO lans.
+		$message = ($message ? $message : e107::getParser()->lanVars('Link with label [x] not found.', array(
+			'x' => $label,
+		)));
+
+		return $this->assert(empty($links), $message, $group);
+	}
+
+	/**
+	 * Pass if a link containing a given href (part) is found.
+	 *
+	 * @param $href
+	 *   The full or partial value of the 'href' attribute of the anchor tag.
+	 * @param $index
+	 *   Link position counting from zero.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to, defaults to 'Other'.
+	 *
+	 * @return boolean
+	 *   TRUE if the assertion succeeded, FALSE otherwise.
+	 */
+	protected function assertLinkByHref($href, $index = 0, $message = '', $group = 'Other') // TODO lans.
+	{
+		$links = $this->xpath('//a[contains(@href, :href)]', array(':href' => $href));
+
+		// TODO lans.
+		$message = ($message ? $message : e107::getParser()->lanVars('Link containing href [x] found.', array(
+			'x' => $href,
+		)));
+
+		return $this->assert(isset($links[$index]), $message, $group);
+	}
+
+	/**
+	 * Pass if a link containing a given href (part) is not found.
+	 *
+	 * @param $href
+	 *   The full or partial value of the 'href' attribute of the anchor tag.
+	 * @param $message
+	 *   Message to display.
+	 * @param $group
+	 *   The group this message belongs to, defaults to 'Other'.
+	 *
+	 * @return boolean
+	 *   TRUE if the assertion succeeded, FALSE otherwise.
+	 */
+	protected function assertNoLinkByHref($href, $message = '', $group = 'Other') // TODO lans.
+	{
+		$links = $this->xpath('//a[contains(@href, :href)]', array(':href' => $href));
+
+		// TODO lans.
+		$message = ($message ? $message : e107::getParser()->lanVars('No link containing href [x] found.', array(
+			'x' => $href,
+		)));
+
+		return $this->assert(empty($links), $message, $group);
+	}
+
+	/**
+	 * Follows a link by name.
+	 *
+	 * Will click the first link found with this link text by default, or a later one if an index is given.
+	 * Match is case insensitive with normalized space. The label is translated label. There is an assert for
+	 * successful click.
+	 *
+	 * @param $label
+	 *   Text between the anchor tags.
+	 * @param $index
+	 *   Link position counting from zero.
+	 *
+	 * @return mixed
+	 *   Page on success, or FALSE on failure.
+	 */
+	protected function clickLink($label, $index = 0)
+	{
+		$url_before = $this->getUrl();
+		$url_target = '';
+
+		$urls = $this->xpath('//a[normalize-space(text())=:label]|//a[.//*[normalize-space(text())=:label]]', array(
+			':label' => $label,
+		));
+
+		if(isset($urls[$index]))
+		{
+			$url_target = $this->getAbsoluteUrl($urls[$index]['href']);
+		}
+
+		// TODO lans.
+		$this->assertTrue(isset($urls[$index]), e107::getParser()->lanVars('Clicked link [x] ([y]) from [z]', array(
+			'x' => $label,
+			'y' => $url_target,
+			'z' => $url_before,
+		)), 'Browser'); // TODO lans.
+
+		if(isset($url_target))
+		{
+			return $this->e107Get($url_target);
+		}
+
+		return false;
+	}
+
+	/**
 	 * Get all option elements, including nested options, in a select.
 	 *
 	 * @param SimpleXMLElement $element
@@ -2120,10 +2280,11 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   TRUE on pass, FALSE on fail.
 	 */
-	protected function assertUrl($url, $message = '', $group = 'Other')
+	protected function assertUrl($url, $message = '', $group = 'Other') // TODO lans.
 	{
 		if(!$message)
 		{
+			// TODO lans.
 			$message = e107::getParser()->lanVars('Current URL is [x].', array(
 				'x' => var_export($url, true),
 			));
@@ -2148,10 +2309,11 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   TRUE on pass, FALSE on fail.
 	 */
-	protected function assertRaw($raw, $message = '', $group = 'Other')
+	protected function assertRaw($raw, $message = '', $group = 'Other') // TODO lans.
 	{
 		if(!$message)
 		{
+			// TODO lans.
 			$message = e107::getParser()->lanVars('Raw "[x]" found', array('x' => $raw));
 		}
 
@@ -2172,10 +2334,11 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   TRUE on pass, FALSE on fail.
 	 */
-	protected function assertNoRaw($raw, $message = '', $group = 'Other')
+	protected function assertNoRaw($raw, $message = '', $group = 'Other') // TODO lans.
 	{
 		if(!$message)
 		{
+			// TODO lans.
 			$message = e107::getParser()->lanVars('Raw "[x]" not found', array('x' => $raw));
 		}
 
@@ -2196,7 +2359,7 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   TRUE on pass, FALSE on fail.
 	 */
-	protected function assertText($text, $message = '', $group = 'Other')
+	protected function assertText($text, $message = '', $group = 'Other') // TODO lans.
 	{
 		return $this->assertTextHelper($text, $message, $group, false);
 	}
@@ -2215,7 +2378,7 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   TRUE on pass, FALSE on fail.
 	 */
-	protected function assertNoText($text, $message = '', $group = 'Other')
+	protected function assertNoText($text, $message = '', $group = 'Other') // TODO lans.
 	{
 		return $this->assertTextHelper($text, $message, $group, true);
 	}
@@ -2245,6 +2408,7 @@ class e107WebTestCase extends e107TestCase
 
 		if(!$message)
 		{
+			// TODO lans.
 			$message = !$not_exists ? e107::getParser()->lanVars('"[x]" found', array('x' => $text)) : e107::getParser()->lanVars('"[x]" not found', array('x' => $text));
 		}
 
@@ -2266,7 +2430,7 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   TRUE on pass, FALSE on fail.
 	 */
-	protected function assertUniqueText($text, $message = '', $group = 'Other')
+	protected function assertUniqueText($text, $message = '', $group = 'Other') // TODO lans.
 	{
 		return $this->assertUniqueTextHelper($text, $message, $group, true);
 	}
@@ -2286,7 +2450,7 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   TRUE on pass, FALSE on fail.
 	 */
-	protected function assertNoUniqueText($text, $message = '', $group = 'Other')
+	protected function assertNoUniqueText($text, $message = '', $group = 'Other') // TODO lans.
 	{
 		return $this->assertUniqueTextHelper($text, $message, $group, false);
 	}
@@ -2316,6 +2480,7 @@ class e107WebTestCase extends e107TestCase
 
 		if(!$message)
 		{
+			// TODO lans.
 			$message = '"' . $text . '"' . ($be_unique ? ' found only once' : ' found more than once');
 		}
 
@@ -2345,10 +2510,11 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   TRUE on pass, FALSE on fail.
 	 */
-	protected function assertPattern($pattern, $message = '', $group = 'Other')
+	protected function assertPattern($pattern, $message = '', $group = 'Other') // TODO lans.
 	{
 		if(!$message)
 		{
+			// TODO lans.
 			$message = e107::getParser()->lanVars('Pattern "[x]" found', array('x' => $pattern));
 		}
 
@@ -2368,10 +2534,11 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   TRUE on pass, FALSE on fail.
 	 */
-	protected function assertNoPattern($pattern, $message = '', $group = 'Other')
+	protected function assertNoPattern($pattern, $message = '', $group = 'Other') // TODO lans.
 	{
 		if(!$message)
 		{
+			// TODO lans.
 			$message = e107::getParser()->lanVars('Pattern "[x]" not found', array('x' => $pattern));
 		}
 
@@ -2391,12 +2558,13 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   TRUE on pass, FALSE on fail.
 	 */
-	protected function assertTitle($title, $message = '', $group = 'Other')
+	protected function assertTitle($title, $message = '', $group = 'Other') // TODO lans.
 	{
 		$actual = (string) current($this->xpath('//title'));
 
 		if(!$message)
 		{
+			// TODO lans.
 			$message = e107::getParser()->lanVars('Page title [x] is equal to [y].', array(
 				'x' => var_export($actual, true),
 				'y' => var_export($title, true),
@@ -2419,12 +2587,13 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   TRUE on pass, FALSE on fail.
 	 */
-	protected function assertNoTitle($title, $message = '', $group = 'Other')
+	protected function assertNoTitle($title, $message = '', $group = 'Other') // TODO lans.
 	{
 		$actual = (string) current($this->xpath('//title'));
 
 		if(!$message)
 		{
+			// TODO lans.
 			$message = e107::getParser()->lanVars('Page title [x] is not equal to [y].', array(
 				'x' => var_export($actual, true),
 				'y' => var_export($title, true),
@@ -2449,7 +2618,7 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   TRUE on pass, FALSE on fail.
 	 */
-	protected function assertFieldByXPath($xpath, $value = null, $message = '', $group = 'Other')
+	protected function assertFieldByXPath($xpath, $value = null, $message = '', $group = 'Other') // TODO lans.
 	{
 		$fields = $this->xpath($xpath);
 
@@ -2538,7 +2707,7 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   TRUE on pass, FALSE on fail.
 	 */
-	protected function assertNoFieldByXPath($xpath, $value = null, $message = '', $group = 'Other')
+	protected function assertNoFieldByXPath($xpath, $value = null, $message = '', $group = 'Other') // TODO lans.
 	{
 		$fields = $this->xpath($xpath);
 
@@ -2576,8 +2745,9 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   TRUE on pass, FALSE on fail.
 	 */
-	protected function assertFieldByName($name, $value = '', $message = '', $group = 'Browser')
+	protected function assertFieldByName($name, $value = '', $message = '', $group = 'Browser') // TODO lans.
 	{
+		// TODO lans.
 		return $this->assertFieldByXPath($this->constructFieldXpath('name', $name), $value, $message ? $message : e107::getParser()->lanVars('Found field by name [x]', array('x' => $name)), $group);
 	}
 
@@ -2596,8 +2766,9 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   TRUE on pass, FALSE on fail.
 	 */
-	protected function assertNoFieldByName($name, $value = '', $message = '', $group = 'Browser')
+	protected function assertNoFieldByName($name, $value = '', $message = '', $group = 'Browser') // TODO lans.
 	{
+		// TODO lans.
 		return $this->assertNoFieldByXPath($this->constructFieldXpath('name', $name), $value, $message ? $message : e107::getParser()->lanVars('Did not find field by name [x]', array('x' => $name)), $group);
 	}
 
@@ -2616,8 +2787,9 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   TRUE on pass, FALSE on fail.
 	 */
-	protected function assertFieldById($id, $value = '', $message = '', $group = 'Browser')
+	protected function assertFieldById($id, $value = '', $message = '', $group = 'Browser') // TODO lans.
 	{
+		// TODO lans.
 		return $this->assertFieldByXPath($this->constructFieldXpath('id', $id), $value, $message ? $message : e107::getParser()->lanVars('Found field by id [x]', array('x' => $id)), $group);
 	}
 
@@ -2636,8 +2808,9 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   TRUE on pass, FALSE on fail.
 	 */
-	protected function assertNoFieldById($id, $value = '', $message = '', $group = 'Browser')
+	protected function assertNoFieldById($id, $value = '', $message = '', $group = 'Browser') // TODO lans.
 	{
+		// TODO lans.
 		return $this->assertNoFieldByXPath($this->constructFieldXpath('id', $id), $value, $message ? $message : e107::getParser()->lanVars('Did not find field by id [x]', array('x' => $id)), $group);
 	}
 
@@ -2654,9 +2827,10 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   TRUE on pass, FALSE on fail.
 	 */
-	protected function assertFieldChecked($id, $message = '', $group = 'Browser')
+	protected function assertFieldChecked($id, $message = '', $group = 'Browser') // TODO lans.
 	{
 		$elements = $this->xpath('//input[@id=:id]', array(':id' => $id));
+		// TODO lans.
 		return $this->assertTrue(isset($elements[0]) && !empty($elements[0]['checked']), $message ? $message : e107::getParser()->lanVars('Checkbox field [x] is checked.', array('x' => $id)), $group);
 	}
 
@@ -2673,9 +2847,10 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   TRUE on pass, FALSE on fail.
 	 */
-	protected function assertNoFieldChecked($id, $message = '', $group = 'Browser')
+	protected function assertNoFieldChecked($id, $message = '', $group = 'Browser') // TODO lans.
 	{
 		$elements = $this->xpath('//input[@id=:id]', array(':id' => $id));
+		// TODO lans.
 		return $this->assertTrue(isset($elements[0]) && empty($elements[0]['checked']), $message ? $message : e107::getParser()->lanVars('Checkbox field [x] is not checked.', array('x' => $id)), $group);
 	}
 
@@ -2694,9 +2869,10 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   TRUE on pass, FALSE on fail.
 	 */
-	protected function assertOptionSelected($id, $option, $message = '', $group = 'Browser')
+	protected function assertOptionSelected($id, $option, $message = '', $group = 'Browser') // TODO lans.
 	{
 		$elements = $this->xpath('//select[@id=:id]//option[@value=:option]', array(':id' => $id, ':option' => $option));
+		// TODO lans.
 		return $this->assertTrue(isset($elements[0]) && !empty($elements[0]['selected']), $message ? $message : e107::getParser()->lanVars('Option [x] for field [y] is selected.', array('x' => $option, 'y' => $id)), $group);
 	}
 
@@ -2715,9 +2891,10 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   TRUE on pass, FALSE on fail.
 	 */
-	protected function assertNoOptionSelected($id, $option, $message = '', $group = 'Browser')
+	protected function assertNoOptionSelected($id, $option, $message = '', $group = 'Browser') // TODO lans.
 	{
 		$elements = $this->xpath('//select[@id=:id]//option[@value=:option]', array(':id' => $id, ':option' => $option));
+		// TODO lans.
 		return $this->assertTrue(isset($elements[0]) && empty($elements[0]['selected']), $message ? $message : e107::getParser()->lanVars('Option [x] for field [y] is not selected.', array('x' => $option, 'y' => $id)), $group);
 	}
 
@@ -2734,7 +2911,7 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   TRUE on pass, FALSE on fail.
 	 */
-	protected function assertField($field, $message = '', $group = 'Other')
+	protected function assertField($field, $message = '', $group = 'Other') // TODO lans.
 	{
 		return $this->assertFieldByXPath($this->constructFieldXpath('name', $field) . '|' . $this->constructFieldXpath('id', $field), null, $message, $group);
 	}
@@ -2752,7 +2929,7 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   TRUE on pass, FALSE on fail.
 	 */
-	protected function assertNoField($field, $message = '', $group = 'Other')
+	protected function assertNoField($field, $message = '', $group = 'Other') // TODO lans.
 	{
 		return $this->assertNoFieldByXPath($this->constructFieldXpath('name', $field) . '|' . $this->constructFieldXpath('id', $field), null, $message, $group);
 	}
@@ -2772,7 +2949,7 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   TRUE on pass, FALSE on fail.
 	 */
-	protected function assertNoDuplicateIds($message = '', $group = 'Other', $ids_to_skip = array())
+	protected function assertNoDuplicateIds($message = '', $group = 'Other', $ids_to_skip = array()) // TODO lans.
 	{
 		$status = true;
 
@@ -2782,6 +2959,7 @@ class e107WebTestCase extends e107TestCase
 
 			if(isset($seen_ids[$id]) && !in_array($id, $ids_to_skip))
 			{
+				// TODO lans.
 				$this->fail(e107::getParser()->lanVars('The HTML ID [x] is unique.', array('x' => $id)), $group);
 				$status = false;
 			}
@@ -2823,10 +3001,11 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   Assertion result.
 	 */
-	protected function assertResponse($code, $message = '', $group = 'Browser')
+	protected function assertResponse($code, $message = '', $group = 'Browser') // TODO lans.
 	{
 		$curl_code = curl_getinfo($this->curlHandle, CURLINFO_HTTP_CODE);
 		$match = is_array($code) ? in_array($curl_code, $code) : $curl_code == $code;
+		// TODO lans.
 		return $this->assertTrue($match, $message ? $message : e107::getParser()->lanVars('HTTP response expected [x], actual [y]', array('x' => $code, 'y' => $curl_code)), $group);
 	}
 
@@ -2844,10 +3023,11 @@ class e107WebTestCase extends e107TestCase
 	 * @return boolean
 	 *   Assertion result.
 	 */
-	protected function assertNoResponse($code, $message = '', $group = 'Browser')
+	protected function assertNoResponse($code, $message = '', $group = 'Browser') // TODO lans.
 	{
 		$curl_code = curl_getinfo($this->curlHandle, CURLINFO_HTTP_CODE);
 		$match = is_array($code) ? in_array($curl_code, $code) : $curl_code == $code;
+		// TODO lans.
 		return $this->assertFalse($match, $message ? $message : e107::getParser()->lanVars('HTTP response not expected [x], actual [y]', array('x' => $code, 'y' => $curl_code)), $group);
 	}
 

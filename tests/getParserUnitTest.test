@@ -24,7 +24,7 @@ class getParserUnitTest extends e107UnitTestCase
 	public static function getInfo()
 	{
 		return array(
-			'name'        => 'getParser() functional tests',
+			'name'        => 'getParser() unit tests',
 			'description' => 'Tests basic functions provided by e107::getParser().',
 			'group'       => 'Parser functions',
 		);

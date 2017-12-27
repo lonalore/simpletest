@@ -675,14 +675,14 @@ function simpletest_clean_database()
 	{
 		if($count > 1)
 		{
-			// FIXME - LANs...
+			// TODO lans.
 			$message = e107::getParser()->lanVars('Removed [x] leftover tables.', array(
 				'x' => $count,
 			));
 		}
 		else
 		{
-			// FIXME - LANs...
+			// TODO lans.
 			$message = e107::getParser()->lanVars('Removed [x] leftover table.', array(
 				'x' => $count,
 			));
@@ -690,7 +690,7 @@ function simpletest_clean_database()
 	}
 	else
 	{
-		// FIXME - LANs...
+		// TODO lans.
 		$message = 'No leftover tables to remove.';
 	}
 
@@ -733,14 +733,14 @@ function simpletest_clean_temporary_directories()
 	{
 		if($count > 1)
 		{
-			// FIXME - LANs...
+			// TODO lans.
 			$message = e107::getParser()->lanVars('Removed [x] temporary directories.', array(
 				'x' => $count,
 			));
 		}
 		else
 		{
-			// FIXME - LANs...
+			// TODO lans.
 			$message = e107::getParser()->lanVars('Removed [x] temporary directory.', array(
 				'x' => $count,
 			));
@@ -748,7 +748,7 @@ function simpletest_clean_temporary_directories()
 	}
 	else
 	{
-		// FIXME - LANs...
+		// TODO lans.
 		$message = 'No temporary directories to remove.';
 	}
 
