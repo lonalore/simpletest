@@ -31,7 +31,7 @@ class getParserUnitTest extends e107UnitTestCase
 	}
 
 	/**
-	 * Tests e107::getParser()->toGlyph('...').
+	 * Tests e107::getParser()->toGlyph().
 	 */
 	public function testToGlyph()
 	{
@@ -51,6 +51,29 @@ class getParserUnitTest extends e107UnitTestCase
 		);
 		$this->verbose('<pre>' . htmlspecialchars(var_export($verbose, true)) . '</pre>');
 		$this->assertEqual($verbose['result'], $verbose['expected'], "toGlyph('fa-cogs') returns the expected HTML.");
+	}
+
+	/**
+	 * Tests e107::getParser()->lanVars().
+	 */
+	public function testLanVars()
+	{
+		$tp = e107::getParser();
+
+		$verbose = array(
+			'result'   => $tp->lanVars('Hi, [x]!', array('x' => 'John')),
+			'expected' => 'Hi, John!',
+		);
+		$this->verbose('<pre>' . var_export($verbose, true) . '</pre>');
+		$this->assertEqual($verbose['result'], $verbose['expected'], "lanVars() returns the expected string.");
+
+
+		$verbose = array(
+			'result'   => $tp->lanVars('Hi, [x] [y]!', array('x' => 'John', 'y' => 'Doe')),
+			'expected' => 'Hi, John Doe!',
+		);
+		$this->verbose('<pre>' . var_export($verbose, true) . '</pre>');
+		$this->assertEqual($verbose['result'], $verbose['expected'], "lanVars() returns the expected string.");
 	}
 
 }
